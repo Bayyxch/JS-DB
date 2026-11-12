@@ -6,9 +6,9 @@ import path from 'node:path';
 const userA = '11111111111111111';
 const userB = '22222222222222222';
 let databasePath = '';
-let db: { close: () => void };
-let ensureUser: (id: string, username: string) => void;
-let social: typeof import('../src/services/social.service.js');
+let db!: { close: () => void };
+let ensureUser!: (id: string, username: string) => void;
+let social!: typeof import('../src/services/social.service.js');
 
 beforeAll(async () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'sawit-social-'));
