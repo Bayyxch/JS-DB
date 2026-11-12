@@ -22,6 +22,8 @@ import { leaderboardCommand } from './commands/leaderboard.js';
 import { statusCommand } from './commands/status.js';
 import { economyCommand } from './commands/economy.js';
 import { pingCommand } from './commands/ping.js';
+import { profileCommand } from './commands/profil.js';
+import { friendCommand } from './commands/teman.js';
 import { createHelpCommand } from './commands/help.js';
 
 runMigrations();
@@ -32,6 +34,8 @@ const client = new Client({
 
 const baseCommands: Command[] = [
   pingCommand,
+  profileCommand,
+  friendCommand,
   balanceCommand,
   kebunCommand,
   statusCommand,
