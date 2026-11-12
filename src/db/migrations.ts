@@ -147,4 +147,37 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 4,
+    name: 'multi_crop_varieties_and_collection',
+    up: (db) => {
+      db.exec(`
+        ALTER TABLE crops ADD COLUMN rarity TEXT NOT NULL DEFAULT 'common'
+          CHECK (rarity IN ('common', 'uncommon', 'rare'));
+        CREATE TABLE IF NOT EXISTS crop_collection (
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          crop_id TEXT NOT NULL REFERENCES crops(id) ON DELETE CASCADE,
+          harvested_total INTEGER NOT NULL DEFAULT 0 CHECK (harvested_total >= 0),
+          first_harvested_at INTEGER NOT NULL,
+          last_harvested_at INTEGER NOT NULL,
+          PRIMARY KEY (user_id, crop_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_crop_collection_user
+          ON crop_collection(user_id, harvested_total DESC);
+        INSERT OR IGNORE INTO items (id, name, type, buy_price, sell_price, description)
+        VALUES
+          ('seed_corn', 'Bibit Jagung', 'SEED', 450, 0, 'Bibit jagung yang tumbuh lebih cepat dari sawit.'),
+          ('corn_ear', 'Tongkol Jagung', 'RESOURCE', 0, 90, 'Hasil panen jagung.'),
+          ('seed_pineapple', 'Bibit Nanas', 'SEED', 700, 0, 'Bibit nanas dengan hasil panen bernilai tinggi.'),
+          ('pineapple', 'Buah Nanas', 'RESOURCE', 0, 120, 'Buah nanas segar dari kebun.'),
+          ('seed_cacao', 'Bibit Kakao', 'SEED', 950, 0, 'Bibit kakao langka dengan masa tumbuh lebih lama.'),
+          ('cacao_pod', 'Buah Kakao', 'RESOURCE', 0, 160, 'Buah kakao bernilai tinggi.');
+        INSERT OR IGNORE INTO crops (id, name, seed_item_id, grow_seconds, min_yield, max_yield, sell_item_id, rarity)
+        VALUES
+          ('corn', 'Jagung', 'seed_corn', 5400, 3, 6, 'corn_ear', 'uncommon'),
+          ('pineapple', 'Nanas', 'seed_pineapple', 10800, 3, 5, 'pineapple', 'uncommon'),
+          ('cacao', 'Kakao', 'seed_cacao', 14400, 2, 4, 'cacao_pod', 'rare');
+      `);
+    },
+  },
 ];
