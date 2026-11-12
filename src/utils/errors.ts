@@ -5,6 +5,15 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'BIO_TOO_LONG': return 'Bio maksimal 160 karakter.';
+    case 'FRIEND_SELF': return 'Lo nggak bisa menambahkan diri sendiri sebagai teman.';
+    case 'FRIEND_USER_NOT_FOUND': return 'Akun pemain itu belum terdaftar. Minta dia memakai command bot dulu.';
+    case 'ALREADY_FRIENDS': return 'Kalian sudah berteman.';
+    case 'FRIEND_REQUEST_RECEIVED': return 'Pemain itu sudah mengirim permintaan. Gunakan !teman accept @pemain.';
+    case 'FRIEND_REQUEST_PENDING': return 'Permintaan pertemanan ke pemain itu masih menunggu.';
+    case 'FRIEND_REQUEST_NOT_FOUND': return 'Permintaan pertemanan tidak ditemukan.';
+    case 'FRIEND_NOT_FOUND': return 'Pemain itu tidak ada di daftar teman lo.';
+    case 'FRIEND_TARGET_REQUIRED': return 'Tandai pemain dengan mention. Contoh: !teman add @pemain.';
     case 'ACCOUNT_NOT_FOUND': return 'Akun belum siap. Coba ulangi command ini.';
     case 'INSUFFICIENT_FUNDS': return 'Saldo lo kurang buat transaksi itu.';
     case 'INVALID_AMOUNT': return 'Jumlah harus berupa angka bulat positif yang aman.';
