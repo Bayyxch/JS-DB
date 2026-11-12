@@ -5,6 +5,13 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'MARRIAGE_SELF': return 'Lo nggak bisa mengajukan pasangan untuk diri sendiri.';
+    case 'MARRIAGE_ALREADY_MARRIED': return 'Salah satu pemain sudah punya pasangan game.';
+    case 'MARRIAGE_PROPOSAL_RECEIVED': return 'Pemain itu sudah mengirim proposal ke lo. Gunakan !nikah accept @pemain.';
+    case 'MARRIAGE_PROPOSAL_PENDING': return 'Proposal ke pemain itu masih menunggu jawaban.';
+    case 'MARRIAGE_PROPOSAL_NOT_FOUND': return 'Proposal pasangan tidak ditemukan.';
+    case 'MARRIAGE_NOT_FOUND': return 'Lo belum punya pasangan game.';
+    case 'BOND_LIMIT': return 'Poin bond sudah mencapai batas aman sistem.';
     case 'BIO_TOO_LONG': return 'Bio maksimal 160 karakter.';
     case 'FRIEND_SELF': return 'Lo nggak bisa menambahkan diri sendiri sebagai teman.';
     case 'FRIEND_USER_NOT_FOUND': return 'Akun pemain itu belum terdaftar. Minta dia memakai command bot dulu.';
