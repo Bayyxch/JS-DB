@@ -8,7 +8,6 @@ import {
   sendMarriageProposal,
 } from '../services/social.service.js';
 import { infoEmbed, successEmbed } from '../utils/embed.js';
-import { formatDuration } from '../utils/format.js';
 
 function requiredTarget(mentionedId?: string, args: string[] = []): string {
   const id = mentionedId ?? args.find((part) => /^\d{17,20}$/.test(part));
