@@ -31,7 +31,7 @@ describe('economy formulas', () => {
 
   it('rejects invalid ranges and random samples', () => {
     expect(() => randomIntInclusive(8, 6)).toThrow('INVALID_RANGE');
-    expect(() => randomIntInclusive(1, Number.MAX_SAFE_INTEGER)).toThrow('INVALID_RANGE');
+    expect(() => randomIntInclusive(0, Number.MAX_SAFE_INTEGER)).toThrow('INVALID_RANGE');
     expect(() => randomIntInclusive(1, 2, () => 1)).toThrow('INVALID_RANDOM_VALUE');
     expect(() => randomIntInclusive(1, 2, () => Number.NaN)).toThrow('INVALID_RANDOM_VALUE');
   });
