@@ -3,6 +3,7 @@ import { config } from './config/env.js';
 import { runMigrations, db } from './db/database.js';
 import type { Command } from './types/command.js';
 import { ensureUser } from './services/economy.service.js';
+import { consumeCooldown } from './services/cooldown.service.js';
 import { errorEmbed } from './utils/embed.js';
 import { friendlyError } from './utils/errors.js';
 import { logger } from './utils/logger.js';
@@ -54,15 +55,6 @@ for (const command of commands) {
   for (const alias of command.aliases ?? []) commandMap.set(alias, command);
 }
 
-const cooldowns = new Map<string, number>();
-
-const cooldownCleanup = setInterval(() => {
-  const timestamp = Date.now();
-  for (const [key, availableAt] of cooldowns) {
-    if (availableAt <= timestamp) cooldowns.delete(key);
-  }
-}, 10 * 60 * 1000);
-
 client.once('ready', () => {
   logger.info(`Logged in as ${client.user?.tag ?? 'unknown'} in ${client.guilds.cache.size} guild(s).`);
 });
@@ -82,20 +74,26 @@ client.on('messageCreate', async (message) => {
   const command = commandMap.get(commandName);
   if (!command) return;
 
-  const key = `${message.author.id}:${command.name}`;
-  const lastUsed = cooldowns.get(key) ?? 0;
-  const cooldownMs = command.cooldownMs ?? 0;
-  const availableAt = lastUsed + cooldownMs;
-  if (cooldownMs > 0 && availableAt > Date.now()) {
-    const remaining = Math.ceil((availableAt - Date.now()) / 1000);
-    await message.reply({ embeds: [errorEmbed('Tunggu dulu', `Command ini bisa dipakai lagi dalam ${remaining} detik.`)] });
-    return;
-  }
-
-  cooldowns.set(key, Date.now());
-
   try {
+    // Create the global account before applying a persistent user-scoped cooldown.
     ensureUser(message.author.id, message.author.username);
+
+    const cooldownMs = command.cooldownMs ?? 0;
+    if (cooldownMs > 0) {
+      const cooldown = consumeCooldown(
+        message.author.id,
+        `command:${command.name}`,
+        cooldownMs,
+      );
+      if (!cooldown.allowed) {
+        const remaining = Math.ceil((cooldown.availableAt - Date.now()) / 1000);
+        await message.reply({
+          embeds: [errorEmbed('Tunggu dulu', `Command ini bisa dipakai lagi dalam ${Math.max(1, remaining)} detik.`)],
+        });
+        return;
+      }
+    }
+
     await command.execute({
       message,
       userId: message.author.id,
@@ -108,19 +106,15 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-process.on('SIGINT', () => {
-  logger.info('Shutting down...');
+function shutdown(signal: string): void {
+  logger.info(`Received ${signal}; shutting down...`);
   client.destroy();
   db.close();
   process.exit(0);
-});
+}
 
-process.on('SIGTERM', () => {
-  logger.info('Shutting down...');
-  client.destroy();
-  db.close();
-  process.exit(0);
-});
+process.once('SIGINT', () => shutdown('SIGINT'));
+process.once('SIGTERM', () => shutdown('SIGTERM'));
 
 client.login(config.token).catch((error) => {
   logger.error('Discord login failed. Check DISCORD_TOKEN and bot configuration.', error);
