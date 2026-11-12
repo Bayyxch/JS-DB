@@ -9,13 +9,13 @@ import { friendlyError } from '../utils/errors.js';
 export const tanamCommand: Command = {
   name: 'tanam',
   aliases: ['plant'],
-  description: 'Tanam sawit di lahan kosong.',
-  usage: '!tanam [basic] [jumlah]',
+  description: 'Tanam berbagai jenis tanaman di lahan kosong.',
+  usage: '!tanam [crop_id] [jumlah]',
   cooldownMs: 2500,
   async execute({ message, userId, args }) {
     const parsed = parseQuantity(args, 'basic');
     if (!parsed) {
-      await message.reply({ embeds: [errorEmbed('Format salah', 'Contoh: `!tanam 4` atau `!tanam basic 4`')] });
+      await message.reply({ embeds: [errorEmbed('Format salah', 'Contoh: `!tanam 4`, `!tanam corn 2`, atau `!tanam cacao 1`')] });
       return;
     }
     try {
