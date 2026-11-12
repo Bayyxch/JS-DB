@@ -2,10 +2,11 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import type Database from 'better-sqlite3';
 
 const userId = '55555555555555555';
 let databasePath = '';
-let db!: import('better-sqlite3').Database;
+let db!: InstanceType<typeof Database>;
 let economy!: typeof import('../src/services/economy.service.js');
 
 beforeAll(async () => {
