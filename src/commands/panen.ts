@@ -14,8 +14,19 @@ export const panenCommand: Command = {
   async execute({ message, userId }) {
     try {
       const result = harvest(userId);
-      const details = result.details.map((row) => `Plot #${row.plot}: +${row.yield} TBS`).join('\n');
-      await message.reply({ embeds: [successEmbed(`${config.emoji.palm} Panen berhasil`, `Plot dipanen: ${formatNumber(result.harvested)}\n${config.emoji.tbs} Total TBS: ${formatNumber(result.tbs)}\n\n${details}\n\nJual hasilnya dengan \`${config.prefix}jual tbs ${result.tbs}\`.`)] });
+      const details = result.details
+        .map((row) => `Plot #${row.plot}: ${row.cropName} +${formatNumber(row.yield)} ${row.itemName}`)
+        .join('\n');
+      const totals = result.items
+        .map((item) => `${item.itemName}: **+${formatNumber(item.quantity)}**`)
+        .join('\n');
+
+      await message.reply({
+        embeds: [successEmbed(
+          `${config.emoji.palm} Panen berhasil`,
+          `Plot dipanen: ${formatNumber(result.harvested)}\n\nHasil panen:\n${totals}\n\n${details}`,
+        )],
+      });
     } catch (error) {
       await message.reply({ embeds: [errorEmbed('Panen gagal', friendlyError(error))] });
     }

@@ -7,17 +7,20 @@ export function friendlyError(error: unknown): string {
   switch (error.message) {
     case 'ACCOUNT_NOT_FOUND': return 'Akun belum siap. Coba ulangi command ini.';
     case 'INSUFFICIENT_FUNDS': return 'Saldo lo kurang buat transaksi itu.';
-    case 'INVALID_AMOUNT': return 'Jumlah harus berupa angka bulat positif.';
-    case 'INVALID_QUANTITY': return 'Jumlah harus berupa angka bulat positif.';
+    case 'INVALID_AMOUNT': return 'Jumlah harus berupa angka bulat positif yang aman.';
+    case 'INVALID_QUANTITY': return 'Jumlah harus berupa angka bulat positif yang aman.';
     case 'ITEM_NOT_FOUND': return 'Item itu nggak tersedia di shop.';
     case 'ITEM_NOT_SELLABLE': return 'Item itu belum bisa dijual.';
     case 'INSUFFICIENT_ITEM': return 'Jumlah item yang lo punya nggak cukup.';
+    case 'INVENTORY_LIMIT': return 'Jumlah item sudah mencapai batas aman sistem.';
     case 'CROP_NOT_FOUND': return 'Jenis tanaman itu belum tersedia.';
+    case 'CROP_REWARD_ITEM_NOT_FOUND': return 'Data hasil panen belum lengkap. Admin perlu memeriksa konfigurasi tanaman.';
     case 'INSUFFICIENT_SEEDS': return 'Bibit lo nggak cukup. Beli dulu di !shop lalu !buy.';
     case 'INSUFFICIENT_LAND': return 'Lahan kosong lo nggak cukup. Gunakan !luasin buat buka plot baru.';
     case 'NOT_READY': return 'Belum ada tanaman yang siap dipanen.';
     case 'MAX_LAND': return 'Lahan lo sudah mencapai batas maksimum untuk versi ini.';
     case 'BALANCE_LIMIT': return 'Saldo sudah mencapai batas aman sistem. Admin perlu audit economy.';
+    case 'LAND_COST_LIMIT': return 'Biaya ekspansi melewati batas aman sistem. Admin perlu menyesuaikan konfigurasi.';
     case 'COOLDOWN': {
       const remaining = typeof availableAt === 'number' ? Math.max(0, availableAt - Date.now()) : 0;
       return `Belum bisa dipakai. Tunggu ${formatDuration(remaining)} lagi.`;

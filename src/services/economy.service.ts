@@ -28,6 +28,20 @@ export interface ItemRow {
   description: string;
 }
 
+export interface HarvestedItem {
+  itemId: string;
+  itemName: string;
+  quantity: number;
+}
+
+export interface HarvestDetail {
+  plot: number;
+  cropName: string;
+  yield: number;
+  itemId: string;
+  itemName: string;
+}
+
 function now(): number {
   return Date.now();
 }
@@ -91,6 +105,8 @@ function changeBalance(
   type: string,
   metadata: Record<string, unknown>,
 ): number {
+  if (!Number.isSafeInteger(amount)) throw new Error('INVALID_AMOUNT');
+
   const wallet = database.prepare('SELECT balance FROM wallets WHERE user_id = ?').get(userId) as { balance: number } | undefined;
   if (!wallet) throw new Error('ACCOUNT_NOT_FOUND');
 
@@ -106,12 +122,12 @@ function changeBalance(
 }
 
 export function debit(userId: string, amount: number, type: string, metadata: Record<string, unknown> = {}): number {
-  if (!Number.isInteger(amount) || amount <= 0) throw new Error('INVALID_AMOUNT');
+  if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error('INVALID_AMOUNT');
   return db.transaction(() => changeBalance(db, userId, -amount, type, metadata))();
 }
 
 export function credit(userId: string, amount: number, type: string, metadata: Record<string, unknown> = {}): number {
-  if (!Number.isInteger(amount) || amount <= 0) throw new Error('INVALID_AMOUNT');
+  if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error('INVALID_AMOUNT');
   return db.transaction(() => changeBalance(db, userId, amount, type, metadata))();
 }
 
@@ -122,10 +138,13 @@ export function getInventoryItem(userId: string, itemId: string): number {
 }
 
 function changeInventory(database: InstanceType<typeof Database>, userId: string, itemId: string, delta: number): number {
+  if (!Number.isSafeInteger(delta)) throw new Error('INVALID_QUANTITY');
+
   const current = database.prepare('SELECT quantity FROM inventory WHERE user_id = ? AND item_id = ?')
     .get(userId, itemId) as { quantity: number } | undefined;
   const next = (current?.quantity ?? 0) + delta;
   if (next < 0) throw new Error('INSUFFICIENT_ITEM');
+  if (!Number.isSafeInteger(next)) throw new Error('INVENTORY_LIMIT');
 
   database.prepare(`
     INSERT INTO inventory (user_id, item_id, quantity)
@@ -167,12 +186,14 @@ export function getFarmPlots(userId: string): FarmPlotRow[] {
 }
 
 export function getCrop(cropIdOrAlias: string): CropRow | undefined {
-  const normalized = cropIdOrAlias.toLowerCase();
+  const normalized = cropIdOrAlias.trim().toLowerCase();
   return db.prepare('SELECT * FROM crops WHERE id = ?').get(normalized) as CropRow | undefined;
 }
 
 export function plant(userId: string, cropId: string, quantity: number): { crop: CropRow; plantedPlots: number[] } {
-  if (!Number.isInteger(quantity) || quantity <= 0) throw new Error('INVALID_QUANTITY');
+  if (!Number.isSafeInteger(quantity) || quantity <= 0 || quantity > config.economy.maxPlots) {
+    throw new Error('INVALID_QUANTITY');
+  }
   return db.transaction(() => {
     const crop = getCrop(cropId);
     if (!crop) throw new Error('CROP_NOT_FOUND');
@@ -200,36 +221,60 @@ export function plant(userId: string, cropId: string, quantity: number): { crop:
   })();
 }
 
-export function harvest(userId: string): { harvested: number; tbs: number; details: Array<{ plot: number; yield: number }> } {
+export function harvest(userId: string): {
+  harvested: number;
+  tbs: number;
+  items: HarvestedItem[];
+  details: HarvestDetail[];
+} {
   return db.transaction(() => {
     const plots = getFarmPlots(userId).filter((plot) => plot.crop_id !== null);
-    const ready: Array<{ plot: FarmPlotRow; crop: CropRow; yield: number }> = [];
+    const ready: Array<{ plot: FarmPlotRow; crop: CropRow; yield: number; itemName: string }> = [];
     const timestamp = now();
 
     for (const plot of plots) {
       const crop = db.prepare('SELECT * FROM crops WHERE id = ?').get(plot.crop_id) as CropRow | undefined;
       if (!crop || plot.planted_at === null) continue;
       if (timestamp - plot.planted_at < crop.grow_seconds * 1000) continue;
-      ready.push({ plot, crop, yield: randomYield(crop.min_yield, crop.max_yield) });
+
+      const item = db.prepare('SELECT name FROM items WHERE id = ?').get(crop.sell_item_id) as { name: string } | undefined;
+      if (!item) throw new Error('CROP_REWARD_ITEM_NOT_FOUND');
+      ready.push({ plot, crop, yield: randomYield(crop.min_yield, crop.max_yield), itemName: item.name });
     }
 
     if (ready.length === 0) throw new Error('NOT_READY');
 
     const updatePlot = db.prepare('UPDATE farm_plots SET crop_id = NULL, planted_at = NULL WHERE user_id = ? AND plot_index = ?');
-    const addItem = db.prepare(`
-      INSERT INTO inventory (user_id, item_id, quantity)
-      VALUES (?, ?, ?)
-      ON CONFLICT(user_id, item_id) DO UPDATE SET quantity = quantity + excluded.quantity
-    `);
-    const tbs = ready.reduce((sum, row) => sum + row.yield, 0);
+    const totals = new Map<string, HarvestedItem>();
 
-    for (const row of ready) updatePlot.run(userId, row.plot.plot_index);
-    addItem.run(userId, 'tbs', tbs);
+    for (const row of ready) {
+      updatePlot.run(userId, row.plot.plot_index);
+      const current = totals.get(row.crop.sell_item_id);
+      const quantity = (current?.quantity ?? 0) + row.yield;
+      if (!Number.isSafeInteger(quantity)) throw new Error('INVENTORY_LIMIT');
+      totals.set(row.crop.sell_item_id, {
+        itemId: row.crop.sell_item_id,
+        itemName: row.itemName,
+        quantity,
+      });
+    }
 
+    for (const item of totals.values()) {
+      changeInventory(db, userId, item.itemId, item.quantity);
+    }
+
+    const items = [...totals.values()];
     return {
       harvested: ready.length,
-      tbs,
-      details: ready.map((row) => ({ plot: row.plot.plot_index, yield: row.yield })),
+      tbs: totals.get('tbs')?.quantity ?? 0,
+      items,
+      details: ready.map((row) => ({
+        plot: row.plot.plot_index,
+        cropName: row.crop.name,
+        yield: row.yield,
+        itemId: row.crop.sell_item_id,
+        itemName: row.itemName,
+      })),
     };
   })();
 }
@@ -295,6 +340,7 @@ export function getInventory(userId: string): Array<ItemRow & { quantity: number
 }
 
 export function getLeaderboard(limit = 10): Array<{ id: string; username: string; balance: number }> {
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) throw new Error('INVALID_LIMIT');
   return db.prepare(`
     SELECT u.id, u.username, w.balance
     FROM wallets w
