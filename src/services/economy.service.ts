@@ -17,6 +17,7 @@ export interface CropRow {
   min_yield: number;
   max_yield: number;
   sell_item_id: string;
+  rarity: 'common' | 'uncommon' | 'rare';
 }
 
 export interface ItemRow {
@@ -40,6 +41,7 @@ export interface HarvestDetail {
   yield: number;
   itemId: string;
   itemName: string;
+  rarity: string;
 }
 
 function now(): number {
@@ -259,6 +261,19 @@ export function harvest(userId: string): {
       });
     }
 
+    const recordCollection = db.prepare(`
+      INSERT INTO crop_collection (user_id, crop_id, harvested_total, first_harvested_at, last_harvested_at)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(user_id, crop_id) DO UPDATE SET
+        harvested_total = harvested_total + excluded.harvested_total,
+        last_harvested_at = excluded.last_harvested_at
+    `);
+    const cropCounts = new Map<string, number>();
+    for (const row of ready) cropCounts.set(row.crop.id, (cropCounts.get(row.crop.id) ?? 0) + 1);
+    for (const [cropId, count] of cropCounts) {
+      recordCollection.run(userId, cropId, count, timestamp, timestamp);
+    }
+
     for (const item of totals.values()) {
       changeInventory(db, userId, item.itemId, item.quantity);
     }
@@ -274,6 +289,7 @@ export function harvest(userId: string): {
         yield: row.yield,
         itemId: row.crop.sell_item_id,
         itemName: row.itemName,
+        rarity: row.crop.rarity,
       })),
     };
   })();
@@ -348,4 +364,31 @@ export function getLeaderboard(limit = 10): Array<{ id: string; username: string
     ORDER BY w.balance DESC, u.created_at ASC
     LIMIT ?
   `).all(limit) as Array<{ id: string; username: string; balance: number }>;
+}
+
+
+export interface CropCollectionEntry {
+  crop_id: string;
+  crop_name: string;
+  rarity: 'common' | 'uncommon' | 'rare';
+  harvested_total: number;
+  first_harvested_at: number;
+  last_harvested_at: number;
+}
+
+export function getCropCollection(userId: string): CropCollectionEntry[] {
+  return db.prepare(`
+    SELECT c.id AS crop_id, c.name AS crop_name, c.rarity,
+      cc.harvested_total, cc.first_harvested_at, cc.last_harvested_at
+    FROM crop_collection cc
+    JOIN crops c ON c.id = cc.crop_id
+    WHERE cc.user_id = ?
+    ORDER BY CASE c.rarity WHEN 'rare' THEN 1 WHEN 'uncommon' THEN 2 ELSE 3 END,
+      c.name ASC
+  `).all(userId) as CropCollectionEntry[];
+}
+
+export function getCropCatalog(): CropRow[] {
+  return db.prepare('SELECT * FROM crops ORDER BY CASE rarity WHEN \'rare\' THEN 1 WHEN \'uncommon\' THEN 2 ELSE 3 END, id ASC')
+    .all() as CropRow[];
 }
