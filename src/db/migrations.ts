@@ -277,4 +277,71 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 8,
+    name: 'adventure_housing_pets_and_world_events',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS player_houses (
+          user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          level INTEGER NOT NULL DEFAULT 1 CHECK (level >= 1 AND level <= 5),
+          created_at INTEGER NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS pet_species (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          rarity TEXT NOT NULL,
+          adoption_cost INTEGER NOT NULL CHECK (adoption_cost > 0),
+          power_percent INTEGER NOT NULL CHECK (power_percent >= 0 AND power_percent <= 20),
+          food_item_id TEXT NOT NULL REFERENCES items(id)
+        );
+        CREATE TABLE IF NOT EXISTS player_pets (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          species_id TEXT NOT NULL REFERENCES pet_species(id),
+          nickname TEXT,
+          level INTEGER NOT NULL DEFAULT 1 CHECK (level >= 1 AND level <= 50),
+          xp INTEGER NOT NULL DEFAULT 0 CHECK (xp >= 0),
+          is_active INTEGER NOT NULL DEFAULT 0 CHECK (is_active IN (0, 1)),
+          acquired_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_player_pets_user ON player_pets(user_id, acquired_at ASC);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_player_pets_one_active
+          ON player_pets(user_id) WHERE is_active = 1;
+        CREATE TABLE IF NOT EXISTS adventure_zones (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          min_house_level INTEGER NOT NULL DEFAULT 1 CHECK (min_house_level >= 1),
+          min_reward INTEGER NOT NULL CHECK (min_reward > 0),
+          max_reward INTEGER NOT NULL CHECK (max_reward >= min_reward),
+          cooldown_minutes INTEGER NOT NULL CHECK (cooldown_minutes > 0)
+        );
+        CREATE TABLE IF NOT EXISTS adventure_runs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          pet_instance_id INTEGER REFERENCES player_pets(id) ON DELETE SET NULL,
+          zone_id TEXT NOT NULL REFERENCES adventure_zones(id),
+          base_reward INTEGER NOT NULL CHECK (base_reward > 0),
+          final_reward INTEGER NOT NULL CHECK (final_reward > 0),
+          event_id TEXT NOT NULL,
+          completed_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_adventure_runs_user_time
+          ON adventure_runs(user_id, completed_at DESC);
+        INSERT OR IGNORE INTO items (id, name, type, buy_price, sell_price, description)
+        VALUES ('pet_food', 'Pakan Hewan', 'FOOD', 100, 0, 'Pakan untuk menaikkan XP hewan peliharaan.');
+        INSERT OR IGNORE INTO pet_species (id, name, rarity, adoption_cost, power_percent, food_item_id)
+        VALUES
+          ('cat', 'Kucing Kebun', 'COMMON', 1200, 3, 'pet_food'),
+          ('dog', 'Anjing Penjaga', 'RARE', 2800, 6, 'pet_food'),
+          ('owl', 'Burung Hantu', 'EPIC', 5200, 10, 'pet_food');
+        INSERT OR IGNORE INTO adventure_zones (id, name, min_house_level, min_reward, max_reward, cooldown_minutes)
+        VALUES
+          ('river', 'Tepi Sungai', 1, 50, 90, 60),
+          ('forest', 'Hutan Pinus', 2, 90, 150, 60),
+          ('highland', 'Dataran Tinggi', 3, 140, 220, 60);
+      `);
+    },
+  },
 ];
