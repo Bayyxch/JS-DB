@@ -10,7 +10,7 @@ export const tanamCommand: Command = {
   name: 'tanam',
   aliases: ['plant'],
   description: 'Tanam sawit di lahan kosong.',
-  usage: '!tanam [basic|corn|rice|cocoa] [jumlah]',
+  usage: '!tanam [basic] [jumlah]',
   cooldownMs: 2500,
   async execute({ message, userId, args }) {
     const parsed = parseQuantity(args, 'basic');
@@ -20,8 +20,8 @@ export const tanamCommand: Command = {
     }
     try {
       const result = plant(userId, parsed.item, parsed.quantity);
-      const grow = Math.floor(result.crop.grow_seconds / 60);
-      await message.reply({ embeds: [successEmbed(`${config.emoji.palm} Penanaman berhasil`, `Tanaman: ${result.crop.name}\nPlot: ${result.plantedPlots.map((plot) => `#${plot}`).join(', ')}\nJumlah: ${formatNumber(result.plantedPlots.length)}\nWaktu tumbuh: ${grow} menit\n\nGunakan \`${config.prefix}panen\` saat matang.`)] });
+      const grow = result.crop.grow_seconds;
+      await message.reply({ embeds: [successEmbed(`${config.emoji.palm} Penanaman berhasil`, `Tanaman: ${result.crop.name}\nPlot: ${result.plantedPlots.map((plot) => `#${plot}`).join(', ')}\nJumlah: ${formatNumber(result.plantedPlots.length)}\nWaktu tumbuh: ${grow} detik\n\nGunakan \`${config.prefix}panen\` saat matang.`)] });
     } catch (error) {
       await message.reply({ embeds: [errorEmbed('Penanaman gagal', friendlyError(error))] });
     }
