@@ -413,4 +413,4 @@ export const migrations: Migration[] = [
         .run(config.economy.basicGrowMinutes * 60, 'basic');
     },
   },
-]];
+];
