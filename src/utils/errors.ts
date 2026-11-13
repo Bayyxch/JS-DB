@@ -5,6 +5,12 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'ADMIN_USER_NOT_BANNED': return 'Pemain itu tidak sedang diblokir.';
+    case 'ADMIN_ITEM_FORMAT': return 'Format: !admin additem @pemain <item_id> <jumlah>.';
+    case 'EQUIPMENT_NOT_FOUND': return 'Equipment tidak ditemukan atau tidak bisa dipasang.';
+    case 'USE_ITEM_NOT_SUPPORTED': return 'Item itu belum bisa digunakan lewat command ini.';
+    case 'NO_PLANTED_CROPS': return 'Tidak ada tanaman yang sedang tumbuh untuk dipercepat.';
+    case 'INSUFFICIENT_GEMS': return 'Gem lo tidak cukup.';
     case 'HOUSE_MAX_LEVEL': return 'Rumah lo sudah mencapai level maksimum.';
     case 'PET_SPECIES_NOT_FOUND': return 'Jenis hewan itu tidak tersedia di tempat adopsi.';
     case 'PET_LIMIT': return 'Lo sudah memiliki batas maksimum 5 hewan.';
