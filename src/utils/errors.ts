@@ -10,6 +10,7 @@ export function friendlyError(error: unknown): string {
     case 'MARRIAGE_PROPOSAL_RECEIVED': return 'Pemain itu sudah mengirim proposal ke lo. Gunakan !nikah accept @pemain.';
     case 'MARRIAGE_PROPOSAL_PENDING': return 'Proposal ke pemain itu masih menunggu jawaban.';
     case 'MARRIAGE_PROPOSAL_NOT_FOUND': return 'Proposal pasangan tidak ditemukan.';
+    case 'MARRIAGE_PROPOSAL_PENDING': return 'Proposal pasangan ke pemain itu masih menunggu jawaban.';
     case 'MARRIAGE_NOT_FOUND': return 'Lo belum punya pasangan game.';
     case 'BOND_LIMIT': return 'Poin bond sudah mencapai batas aman sistem.';
     case 'BIO_TOO_LONG': return 'Bio maksimal 160 karakter.';
