@@ -30,9 +30,8 @@ function emojiEnv(name: string, fallback: string): string {
 const prefix = process.env.PREFIX?.trim() || '!';
 validatePrefix(prefix);
 
-// Plant growth is deliberately capped: this is a Discord economy loop, not a
-// real-time farming simulator. Keep custom deployments between 1 and 30 minutes.
-const basicGrowMinutes = Math.min(intEnv('BASIC_GROW_MINUTES', 10), 30);
+// Palm growth stays intentionally short: default 30 seconds, hard cap 60 seconds.
+const basicGrowSeconds = Math.min(intEnv('BASIC_GROW_SECONDS', 30), 60);
 
 const economy = {
   startingBalance: intEnv('STARTING_BALANCE', 2500),
