@@ -29,18 +29,24 @@ export function runExpedition(userId: string, timestamp = Date.now()): Expeditio
     const reward = resources[randomIntInclusive(0, resources.length - 1)]!;
     const quantity = randomIntInclusive(1, 3) + event.expeditionBonus;
 
+    const inventoryRow = db.prepare('SELECT quantity FROM inventory WHERE user_id = ? AND item_id = ?')
+      .get(userId, reward.id) as { quantity: number } | undefined;
+    const nextQuantity = (inventoryRow?.quantity ?? 0) + quantity;
+    if (!Number.isSafeInteger(nextQuantity)) throw new Error('INVENTORY_LIMIT');
     db.prepare(`
       INSERT INTO inventory (user_id, item_id, quantity) VALUES (?, ?, ?)
-      ON CONFLICT(user_id, item_id) DO UPDATE SET quantity = quantity + excluded.quantity
-    `).run(userId, reward.id, quantity);
+      ON CONFLICT(user_id, item_id) DO UPDATE SET quantity = excluded.quantity
+    `).run(userId, reward.id, nextQuantity);
 
-    db.prepare(`
-      INSERT INTO player_adventure (user_id, xp, expeditions_completed)
-      VALUES (?, 15, 1)
-      ON CONFLICT(user_id) DO UPDATE SET
-        xp = xp + excluded.xp,
-        expeditions_completed = expeditions_completed + 1
-    `).run(userId);
+    const currentProgress = db.prepare('SELECT xp, expeditions_completed FROM player_adventure WHERE user_id = ?')
+      .get(userId) as { xp: number; expeditions_completed: number } | undefined;
+    const nextXp = (currentProgress?.xp ?? 0) + 15;
+    const nextCompleted = (currentProgress?.expeditions_completed ?? 0) + 1;
+    if (!Number.isSafeInteger(nextXp) || !Number.isSafeInteger(nextCompleted)) throw new Error('ADVENTURE_PROGRESS_LIMIT');
+    db.prepare('INSERT OR IGNORE INTO player_adventure (user_id, xp, expeditions_completed) VALUES (?, 0, 0)')
+      .run(userId);
+    db.prepare('UPDATE player_adventure SET xp = ?, expeditions_completed = ? WHERE user_id = ?')
+      .run(nextXp, nextCompleted, userId);
 
     db.prepare(`
       INSERT INTO cooldowns (user_id, action, available_at) VALUES (?, 'expedition', ?)
