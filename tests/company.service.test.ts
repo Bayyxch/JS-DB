@@ -44,9 +44,10 @@ describe('global cooperative companies', () => {
     const company = companies.getUserCompany(owner)!;
     companies.inviteToCompany(owner, member);
     expect(companies.listCompanyInvites(member)).toHaveLength(1);
-    expect(() => companies.inviteToCompany(member, third)).toThrow('COMPANY_OWNER_ONLY');
+    expect(() => companies.inviteToCompany(member, third)).toThrow('COMPANY_NOT_FOUND');
     const joined = companies.acceptCompanyInvite(member, company.id);
     expect(joined.member_count).toBe(2);
+    expect(() => companies.inviteToCompany(member, third)).toThrow('COMPANY_OWNER_ONLY');
     expect(() => companies.acceptCompanyInvite(member, company.id)).toThrow('COMPANY_ALREADY_MEMBER');
     expect(() => companies.inviteToCompany(owner, owner)).toThrow('COMPANY_INVITE_SELF');
   });
