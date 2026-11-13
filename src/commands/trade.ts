@@ -18,7 +18,9 @@ export const tradeCommand: Command = {
     const action = args[0]?.toLowerCase() ?? 'list';
 
     if (action === 'offer') {
-      const targetId = message.mentions.users.first()?.id ?? args[1];
+      const mentionedUser = message.mentions.users.first();
+      if (mentionedUser?.bot) throw new Error('TRADE_TARGET_INVALID');
+      const targetId = mentionedUser?.id ?? args[1];
       if (!targetId || !/^\d{17,20}$/.test(targetId)) throw new Error('TRADE_TARGET_REQUIRED');
       const [giveItem, giveRaw, wantItem, wantRaw] = args.slice(2);
       const giveQuantity = Number(giveRaw);
