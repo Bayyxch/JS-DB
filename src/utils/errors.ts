@@ -5,6 +5,7 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'ADVENTURE_PROGRESS_LIMIT': return 'Progres ekspedisi sudah mencapai batas aman sistem.';
     case 'EXPEDITION_NO_REWARDS': return 'Belum ada resource yang bisa ditemukan dalam ekspedisi.';
     case 'HOME_MAX_LEVEL': return 'Rumah lo sudah mencapai level maksimum.';
     case 'PET_INVALID_NAME': return 'Nama hewan harus 2–16 karakter dan hanya memakai huruf, angka, spasi, _ atau -.';
