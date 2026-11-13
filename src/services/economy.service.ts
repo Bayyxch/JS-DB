@@ -38,7 +38,8 @@ export interface CropCollectionEntry {
   crop_id: string;
   crop_name: string;
   total_harvested: number;
-  first_harvested_at: number;
+  first_harvested_at: number | null;
+  discovered: number;
 }
 
 export interface HarvestDetail {
@@ -374,10 +375,12 @@ export function getLeaderboard(limit = 10): Array<{ id: string; username: string
 
 export function getCropCollection(userId: string): CropCollectionEntry[] {
   return db.prepare(`
-    SELECT d.crop_id, c.name AS crop_name, d.total_harvested, d.first_harvested_at
-    FROM crop_discoveries d
-    JOIN crops c ON c.id = d.crop_id
-    WHERE d.user_id = ?
-    ORDER BY d.first_harvested_at ASC, c.name ASC
+    SELECT c.id AS crop_id, c.name AS crop_name,
+      COALESCE(d.total_harvested, 0) AS total_harvested,
+      d.first_harvested_at,
+      CASE WHEN d.user_id IS NULL THEN 0 ELSE 1 END AS discovered
+    FROM crops c
+    LEFT JOIN crop_discoveries d ON d.crop_id = c.id AND d.user_id = ?
+    ORDER BY c.id ASC
   `).all(userId) as CropCollectionEntry[];
 }
