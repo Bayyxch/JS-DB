@@ -243,3 +243,11 @@ JS-DB/
 ---
 
 Dibuat untuk mengembangkan pengalaman farming, economy, dan social yang bisa dimainkan bersama lintas server Discord.
+
+
+## Gameplay Notes
+
+- The core farming loop is focused on kelapa sawit and Tandan Buah Segar (TBS).
+- Palm growth defaults to 10 minutes and is capped at 30 minutes for Discord-friendly sessions.
+- Use `!help` for the interactive command categories or `!help <command>` for a focused guide.
+- Canvas cards are used for player-facing screens such as profile, farm, harvest, inventory, shop, and leaderboard, with embed fallbacks.
