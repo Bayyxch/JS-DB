@@ -345,7 +345,9 @@ export const migrations: Migration[] = [
     },
   },
 
-  {
+];
+
+const palmOnlyMigration: Migration =   {
     version: 9,
     name: 'palm_only_crop_rebalance',
     up: (db) => {
@@ -412,5 +414,6 @@ export const migrations: Migration[] = [
       db.prepare('UPDATE crops SET grow_seconds = ? WHERE id = ?')
         .run(config.economy.basicGrowMinutes * 60, 'basic');
     },
-  },
-];
+  },;
+
+migrations.push(palmOnlyMigration);
