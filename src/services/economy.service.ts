@@ -568,6 +568,37 @@ export function work(userId: string): { reward: number; balance: number } {
   })();
 }
 
+export function equipItem(userId: string, itemId: string): { name: string; slot: string } {
+  return db.transaction(() => {
+    const item = db.prepare("SELECT id, name, equipment_slot FROM items WHERE id = ? AND category = 'EQUIPMENT'")
+      .get(itemId) as { id: string; name: string; equipment_slot: string | null } | undefined;
+    if (!item?.equipment_slot) throw new Error('EQUIPMENT_NOT_FOUND');
+    if (getInventoryItem(userId, itemId) < 1) throw new Error('INSUFFICIENT_ITEM');
+    changeInventory(db, userId, itemId, -1);
+    const previous = db.prepare('SELECT item_id FROM player_equipment WHERE user_id = ? AND slot = ?')
+      .get(userId, item.equipment_slot) as { item_id: string } | undefined;
+    if (previous) changeInventory(db, userId, previous.item_id, 1);
+    db.prepare(`
+      INSERT INTO player_equipment (user_id, slot, item_id, equipped_at) VALUES (?, ?, ?, ?)
+      ON CONFLICT(user_id, slot) DO UPDATE SET item_id = excluded.item_id, equipped_at = excluded.equipped_at
+    `).run(userId, item.equipment_slot, itemId, now());
+    return { name: item.name, slot: item.equipment_slot };
+  })();
+}
+
+export function useGrowthBooster(userId: string): number {
+  return db.transaction(() => {
+    if (getInventoryItem(userId, 'growth_boost') < 1) throw new Error('INSUFFICIENT_ITEM');
+    const planted = db.prepare('SELECT COUNT(*) AS count FROM farm_plots WHERE user_id = ? AND crop_id IS NOT NULL')
+      .get(userId) as { count: number };
+    if (!planted.count) throw new Error('NO_PLANTED_CROPS');
+    changeInventory(db, userId, 'growth_boost', -1);
+    db.prepare('UPDATE farm_plots SET planted_at = MAX(0, planted_at - 10000) WHERE user_id = ? AND crop_id IS NOT NULL')
+      .run(userId);
+    return planted.count;
+  })();
+}
+
 export function getShop(category = 'SEEDS'): ItemRow[] {
   return db.prepare('SELECT * FROM items WHERE buy_price > 0 AND category = ? ORDER BY buy_price ASC, id ASC').all(category.toUpperCase()) as ItemRow[];
 }
