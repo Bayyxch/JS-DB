@@ -27,6 +27,7 @@ import { friendCommand } from './commands/teman.js';
 import { marriageCommand } from './commands/nikah.js';
 import { collectionCommand } from './commands/koleksi.js';
 import { companyCommand } from './commands/koperasi.js';
+import { marketCommand } from './commands/market.js';
 import { createHelpCommand } from './commands/help.js';
 
 runMigrations();
@@ -42,6 +43,7 @@ const baseCommands: Command[] = [
   marriageCommand,
   collectionCommand,
   companyCommand,
+  marketCommand,
   balanceCommand,
   kebunCommand,
   statusCommand,
