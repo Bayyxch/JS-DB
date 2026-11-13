@@ -160,3 +160,256 @@ export async function renderProfileCard(profile: PlayerProfile, avatarUrl?: stri
 
   return canvas.encode('png');
 }
+
+
+export interface LeaderboardVisualEntry {
+  username: string;
+  balance: number;
+}
+
+export interface FarmVisualPlot {
+  plot_index: number;
+  cropName: string | null;
+  state: string;
+}
+
+export interface InventoryVisualItem {
+  name: string;
+  quantity: number;
+  type: string;
+}
+
+export interface ShopVisualItem {
+  id: string;
+  name: string;
+  buy_price: number;
+  description: string;
+}
+
+function createListCanvas(title: string, subtitle: string, itemCount: number, columns = 1) {
+  const rows = Math.max(1, Math.ceil(itemCount / columns));
+  const cardHeight = columns === 1 ? 72 : 126;
+  const canvas = createCanvas(WIDTH, 210 + rows * (cardHeight + 14));
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = COLORS.background;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  roundedRect(ctx, 24, 24, canvas.width - 48, canvas.height - 48, 28);
+  ctx.fillStyle = COLORS.panel;
+  ctx.fill();
+  ctx.fillStyle = COLORS.accent;
+  ctx.font = '700 34px Arial';
+  ctx.fillText(title, 64, 86);
+  ctx.fillStyle = COLORS.muted;
+  ctx.font = '20px Arial';
+  ctx.fillText(subtitle, 64, 124);
+  ctx.fillStyle = COLORS.line;
+  ctx.fillRect(64, 150, canvas.width - 128, 1);
+  return { canvas, ctx, top: 174, cardHeight };
+}
+
+export async function renderLeaderboardCard(entries: LeaderboardVisualEntry[]): Promise<Buffer> {
+  const { canvas, ctx, top, cardHeight } = createListCanvas(
+    'GLOBAL LEADERBOARD',
+    'Peringkat pemain berdasarkan saldo SawitCoin',
+    entries.length,
+  );
+  entries.forEach((entry, index) => {
+    const y = top + index * (cardHeight + 10);
+    roundedRect(ctx, 64, y, WIDTH - 128, cardHeight, 16);
+    ctx.fillStyle = index < 3 ? COLORS.accentSoft : COLORS.panelSoft;
+    ctx.fill();
+    ctx.fillStyle = index < 3 ? COLORS.accent : COLORS.muted;
+    ctx.font = '700 26px Arial';
+    ctx.fillText(index === 0 ? '01' : String(index + 1).padStart(2, '0'), 88, y + 44);
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '700 25px Arial';
+    ctx.fillText(entry.username.slice(0, 28), 160, y + 43);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = COLORS.accent;
+    ctx.font = '700 25px Arial';
+    ctx.fillText(`${formatNumber(entry.balance)} SC`, WIDTH - 88, y + 43);
+    ctx.textAlign = 'left';
+  });
+  return canvas.encode('png');
+}
+
+export async function renderFarmCard(data: {
+  username: string;
+  balance: number;
+  planted: number;
+  total: number;
+  ready: number;
+  seeds: number;
+  tbs: number;
+  plots: FarmVisualPlot[];
+}): Promise<Buffer> {
+  const columns = 4;
+  const rows = Math.max(1, Math.ceil(data.plots.length / columns));
+  const canvas = createCanvas(WIDTH, 350 + rows * 112);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = COLORS.background;
+  ctx.fillRect(0, 0, WIDTH, canvas.height);
+  roundedRect(ctx, 24, 24, WIDTH - 48, canvas.height - 48, 28);
+  ctx.fillStyle = COLORS.panel;
+  ctx.fill();
+  ctx.fillStyle = COLORS.accent;
+  ctx.font = '700 34px Arial';
+  ctx.fillText(`KEBUN / ${data.username.slice(0, 22).toUpperCase()}`, 64, 82);
+  ctx.fillStyle = COLORS.muted;
+  ctx.font = '20px Arial';
+  ctx.fillText(`${formatNumber(data.balance)} SawitCoin   •   ${data.planted}/${data.total} lahan   •   ${data.ready} siap panen`, 64, 120);
+
+  const stats = [
+    { label: 'BIBIT SAWIT', value: formatNumber(data.seeds) },
+    { label: 'TBS TERSIMPAN', value: formatNumber(data.tbs) },
+    { label: 'LAHAN AKTIF', value: `${data.planted}/${data.total}` },
+  ];
+  stats.forEach((stat, index) => {
+    const x = 64 + index * 355;
+    roundedRect(ctx, x, 150, 320, 92, 16);
+    ctx.fillStyle = COLORS.panelSoft;
+    ctx.fill();
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '600 15px Arial';
+    ctx.fillText(stat.label, x + 18, 182);
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '700 26px Arial';
+    ctx.fillText(stat.value, x + 18, 218);
+  });
+
+  data.plots.forEach((plot, index) => {
+    const x = 64 + (index % columns) * 270;
+    const y = 270 + Math.floor(index / columns) * 104;
+    roundedRect(ctx, x, y, 244, 86, 14);
+    ctx.fillStyle = plot.state === 'ready' ? COLORS.accentSoft : plot.cropName ? COLORS.panelSoft : '#17201a';
+    ctx.fill();
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '600 15px Arial';
+    ctx.fillText(`PLOT #${plot.plot_index}`, x + 16, y + 28);
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '700 19px Arial';
+    ctx.fillText((plot.cropName ?? 'Kosong').slice(0, 19), x + 16, y + 57);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = plot.state === 'ready' ? COLORS.accent : COLORS.muted;
+    ctx.font = '600 14px Arial';
+    ctx.fillText(plot.state === 'ready' ? 'SIAP PANEN' : plot.state === 'empty' ? 'KOSONG' : plot.state, x + 226, y + 28);
+    ctx.textAlign = 'left';
+  });
+  return canvas.encode('png');
+}
+
+export async function renderInventoryCard(username: string, items: InventoryVisualItem[]): Promise<Buffer> {
+  const { canvas, ctx, top, cardHeight } = createListCanvas(
+    'INVENTORY',
+    `Persediaan milik ${username.slice(0, 32)}`,
+    items.length,
+    2,
+  );
+  const columns = 2;
+  items.forEach((item, index) => {
+    const x = 64 + (index % columns) * 536;
+    const y = top + Math.floor(index / columns) * (cardHeight + 14);
+    roundedRect(ctx, x, y, 510, cardHeight, 16);
+    ctx.fillStyle = COLORS.panelSoft;
+    ctx.fill();
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '600 15px Arial';
+    ctx.fillText(item.type.slice(0, 22).toUpperCase(), x + 20, y + 28);
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '700 23px Arial';
+    ctx.fillText(item.name.slice(0, 25), x + 20, y + 62);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = COLORS.accent;
+    ctx.font = '700 22px Arial';
+    ctx.fillText(`x${formatNumber(item.quantity)}`, x + 480, y + 47);
+    ctx.textAlign = 'left';
+  });
+  if (items.length === 0) {
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '24px Arial';
+    ctx.fillText('Inventory masih kosong.', 64, top + 44);
+  }
+  return canvas.encode('png');
+}
+
+export async function renderShopCard(items: ShopVisualItem[]): Promise<Buffer> {
+  const { canvas, ctx, top, cardHeight } = createListCanvas(
+    'TOKO PERKEBUNAN',
+    'Perlengkapan dan kebutuhan untuk mengelola kebun sawit',
+    items.length,
+    2,
+  );
+  items.forEach((item, index) => {
+    const x = 64 + (index % 2) * 536;
+    const y = top + Math.floor(index / 2) * (cardHeight + 14);
+    roundedRect(ctx, x, y, 510, cardHeight, 16);
+    ctx.fillStyle = COLORS.panelSoft;
+    ctx.fill();
+    ctx.fillStyle = COLORS.accent;
+    ctx.font = '600 15px Arial';
+    ctx.fillText(item.id.toUpperCase(), x + 20, y + 27);
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '700 23px Arial';
+    ctx.fillText(item.name.slice(0, 28), x + 20, y + 58);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = COLORS.accent;
+    ctx.font = '700 20px Arial';
+    ctx.fillText(`${formatNumber(item.buy_price)} SC`, x + 480, y + 32);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '15px Arial';
+    drawWrappedText(ctx, item.description, x + 20, y + 84, 465, 19, 2);
+  });
+  return canvas.encode('png');
+}
+
+
+export async function renderHarvestCard(data: {
+  username: string;
+  eventName: string;
+  eventDescription: string;
+  worldEventName: string;
+  harvested: number;
+  items: Array<{ itemName: string; quantity: number }>;
+}): Promise<Buffer> {
+  const canvas = createCanvas(WIDTH, 430 + data.items.length * 78);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = COLORS.background;
+  ctx.fillRect(0, 0, WIDTH, canvas.height);
+  roundedRect(ctx, 24, 24, WIDTH - 48, canvas.height - 48, 28);
+  ctx.fillStyle = COLORS.panel;
+  ctx.fill();
+  ctx.fillStyle = COLORS.accent;
+  ctx.font = '700 36px Arial';
+  ctx.fillText('HASIL PANEN SAWIT', 64, 88);
+  ctx.fillStyle = COLORS.muted;
+  ctx.font = '21px Arial';
+  ctx.fillText(`Panen milik ${data.username.slice(0, 28)}`, 64, 128);
+  roundedRect(ctx, 64, 160, WIDTH - 128, 118, 18);
+  ctx.fillStyle = COLORS.panelSoft;
+  ctx.fill();
+  ctx.fillStyle = COLORS.accent;
+  ctx.font = '700 26px Arial';
+  ctx.fillText(data.eventName.slice(0, 48), 90, 204);
+  ctx.fillStyle = COLORS.text;
+  ctx.font = '18px Arial';
+  drawWrappedText(ctx, data.eventDescription, 90, 238, 980, 24, 1);
+  ctx.fillStyle = COLORS.muted;
+  ctx.font = '18px Arial';
+  ctx.fillText(`Event dunia: ${data.worldEventName}   •   Plot dipanen: ${data.harvested}`, 64, 322);
+  data.items.forEach((item, index) => {
+    const y = 354 + index * 78;
+    roundedRect(ctx, 64, y, WIDTH - 128, 62, 14);
+    ctx.fillStyle = COLORS.panelSoft;
+    ctx.fill();
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '700 23px Arial';
+    ctx.fillText(item.itemName.slice(0, 38), 88, y + 39);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = COLORS.accent;
+    ctx.font = '700 25px Arial';
+    ctx.fillText(`+${formatNumber(item.quantity)}`, WIDTH - 88, y + 39);
+    ctx.textAlign = 'left';
+  });
+  return canvas.encode('png');
+}

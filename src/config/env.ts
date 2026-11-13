@@ -30,12 +30,16 @@ function emojiEnv(name: string, fallback: string): string {
 const prefix = process.env.PREFIX?.trim() || '!';
 validatePrefix(prefix);
 
+// Plant growth is deliberately capped: this is a Discord economy loop, not a
+// real-time farming simulator. Keep custom deployments between 1 and 30 minutes.
+const basicGrowMinutes = Math.min(intEnv('BASIC_GROW_MINUTES', 10), 30);
+
 const economy = {
   startingBalance: intEnv('STARTING_BALANCE', 2500),
   startingSeeds: intEnv('STARTING_SEEDS', 8),
   startingPlots: intEnv('STARTING_PLOTS', 4),
   basicSeedPrice: intEnv('BASIC_SEED_PRICE', 300),
-  basicGrowMinutes: intEnv('BASIC_GROW_MINUTES', 240),
+  basicGrowMinutes,
   basicMinYield: intEnv('BASIC_MIN_YIELD', 6),
   basicMaxYield: intEnv('BASIC_MAX_YIELD', 8),
   tbsSellPrice: intEnv('TBS_SELL_PRICE', 70),

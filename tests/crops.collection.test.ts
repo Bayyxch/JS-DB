@@ -25,26 +25,26 @@ afterAll(() => {
   if (tempDirectory) fs.rmSync(tempDirectory, { recursive: true, force: true });
 });
 
-describe('diverse crops and global collection', () => {
-  it('seeds the crop catalog with multiple crop types', () => {
+describe('palm-only crop collection', () => {
+  it('keeps the active crop catalog focused on palm', () => {
     const catalog = economy.getCropCollection(player);
-    expect(catalog.map((crop) => crop.crop_id)).toEqual(['basic', 'cocoa', 'corn', 'rice']);
+    expect(catalog.map((crop) => crop.crop_id)).toEqual(['basic']);
     expect(catalog.every((crop) => crop.discovered === 0)).toBe(true);
   });
 
-  it('records a crop discovery and cumulative yield when harvested', () => {
-    economy.buyItem(player, 'seed_corn', 1);
-    economy.plant(player, 'corn', 1);
+  it('records palm discovery and cumulative TBS yield when harvested', () => {
+    economy.buyItem(player, 'seed_basic', 1);
+    economy.plant(player, 'basic', 1);
     const db = database as unknown as { prepare: (sql: string) => { run: (...args: unknown[]) => void } };
     db.prepare('UPDATE farm_plots SET planted_at = ? WHERE user_id = ? AND crop_id = ?')
-      .run(Date.now() - 100_000_000, player, 'corn');
+      .run(Date.now() - 100_000_000, player, 'basic');
 
     const harvested = economy.harvest(player);
     expect(harvested.harvested).toBe(1);
-    expect(harvested.items.some((item) => item.itemId === 'corn')).toBe(true);
+    expect(harvested.items.some((item) => item.itemId === 'tbs')).toBe(true);
     const collection = economy.getCropCollection(player);
-    const corn = collection.find((crop) => crop.crop_id === 'corn');
-    expect(corn?.discovered).toBe(1);
-    expect(corn?.total_harvested).toBeGreaterThanOrEqual(5);
+    const palm = collection.find((crop) => crop.crop_id === 'basic');
+    expect(palm?.discovered).toBe(1);
+    expect(palm?.total_harvested).toBeGreaterThanOrEqual(6);
   });
 });

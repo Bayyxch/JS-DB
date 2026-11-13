@@ -1,9 +1,11 @@
+import { AttachmentBuilder } from 'discord.js';
 import type { Command } from '../types/command.js';
 import { config } from '../config/env.js';
 import { getFarmPlots, getBalance } from '../services/economy.service.js';
 import { formatDuration, formatNumber } from '../utils/format.js';
 import { infoEmbed } from '../utils/embed.js';
 import { db } from '../db/database.js';
+import { renderFarmCard, type FarmVisualPlot } from '../services/visual.service.js';
 
 export const kebunCommand: Command = {
   name: 'kebun',
@@ -12,43 +14,52 @@ export const kebunCommand: Command = {
   usage: '!kebun',
   async execute({ message, userId }) {
     const plots = getFarmPlots(userId);
-    const planted = plots.filter((plot) => plot.crop_id !== null).length;
-    const ready = plots.filter((plot) => {
-      if (plot.crop_id === null || plot.planted_at === null) return false;
-      const crop = db.prepare('SELECT grow_seconds FROM crops WHERE id = ?').get(plot.crop_id) as { grow_seconds: number } | undefined;
-      return crop ? Date.now() - plot.planted_at >= crop.grow_seconds * 1000 : false;
-    }).length;
-    const nextGrow = plots
-      .filter((plot) => plot.crop_id !== null && plot.planted_at !== null)
-      .map((plot) => {
-        const crop = db.prepare('SELECT grow_seconds FROM crops WHERE id = ?').get(plot.crop_id) as { grow_seconds: number } | undefined;
-        return crop && plot.planted_at !== null ? plot.planted_at + crop.grow_seconds * 1000 - Date.now() : Number.POSITIVE_INFINITY;
-      })
-      .filter((remaining) => remaining > 0)
-      .sort((a, b) => a - b)[0];
+    const visualPlots: FarmVisualPlot[] = [];
+    let ready = 0;
+    let planted = 0;
+    let nextGrow = Number.POSITIVE_INFINITY;
 
-    const lines = plots.map((plot) => {
-      if (!plot.crop_id || plot.planted_at === null) return `#${plot.plot_index} — kosong`;
-      const crop = db.prepare('SELECT name, grow_seconds FROM crops WHERE id = ?').get(plot.crop_id) as { name: string; grow_seconds: number } | undefined;
-      if (!crop) return `#${plot.plot_index} — data tanaman rusak`;
+    for (const plot of plots) {
+      if (plot.crop_id === null || plot.planted_at === null) {
+        visualPlots.push({ plot_index: plot.plot_index, cropName: null, state: 'empty' });
+        continue;
+      }
+      planted += 1;
+      const crop = db.prepare('SELECT name, grow_seconds FROM crops WHERE id = ?')
+        .get(plot.crop_id) as { name: string; grow_seconds: number } | undefined;
+      if (!crop) {
+        visualPlots.push({ plot_index: plot.plot_index, cropName: 'Data tidak tersedia', state: 'Periksa data' });
+        continue;
+      }
       const remaining = plot.planted_at + crop.grow_seconds * 1000 - Date.now();
-      return `#${plot.plot_index} — ${crop.name} — ${remaining <= 0 ? 'SIAP PANEN' : formatDuration(remaining)}`;
-    });
+      if (remaining <= 0) {
+        ready += 1;
+        visualPlots.push({ plot_index: plot.plot_index, cropName: crop.name, state: 'ready' });
+      } else {
+        nextGrow = Math.min(nextGrow, remaining);
+        visualPlots.push({ plot_index: plot.plot_index, cropName: crop.name, state: formatDuration(remaining) });
+      }
+    }
 
     const inventoryTbs = db.prepare("SELECT quantity FROM inventory WHERE user_id = ? AND item_id = 'tbs'").get(userId) as { quantity: number } | undefined;
     const seeds = db.prepare("SELECT quantity FROM inventory WHERE user_id = ? AND item_id = 'seed_basic'").get(userId) as { quantity: number } | undefined;
+    const balance = getBalance(userId);
 
-    const summary = [
-      `${config.emoji.coin} Saldo: **${formatNumber(getBalance(userId))}**`,
-      `${config.emoji.land} Lahan: **${planted}/${plots.length}** terisi`,
-      `${config.emoji.palm} Siap panen: **${ready}** plot`,
-      `${config.emoji.seed} Bibit Basic: **${formatNumber(seeds?.quantity ?? 0)}**`,
-      `${config.emoji.tbs} TBS: **${formatNumber(inventoryTbs?.quantity ?? 0)}**`,
-      nextGrow ? `Panen terdekat: **${formatDuration(nextGrow)}**` : 'Panen terdekat: **belum ada tanaman aktif**',
-      '',
-      lines.join('\n'),
-    ].join('\n');
-
-    await message.reply({ embeds: [infoEmbed(`${config.emoji.palm} Kebun ${message.author.username}`, summary)] });
+    try {
+      const image = await renderFarmCard({ username: message.author.username, balance, planted, total: plots.length, ready, seeds: seeds?.quantity ?? 0, tbs: inventoryTbs?.quantity ?? 0, plots: visualPlots });
+      await message.reply({ files: [new AttachmentBuilder(image, { name: 'kebun.png' })] });
+    } catch {
+      const lines = visualPlots.map((plot) => `#${plot.plot_index} — ${plot.cropName ?? 'Kosong'} — ${plot.state === 'ready' ? 'SIAP PANEN' : plot.state}`);
+      const summary = [
+        `${config.emoji.coin} Saldo: **${formatNumber(balance)}**`,
+        `${config.emoji.land} Lahan: **${planted}/${plots.length}** terisi`,
+        `${config.emoji.palm} Siap panen: **${ready}** plot`,
+        `${config.emoji.seed} Bibit Sawit: **${formatNumber(seeds?.quantity ?? 0)}**`,
+        `${config.emoji.tbs} TBS: **${formatNumber(inventoryTbs?.quantity ?? 0)}**`,
+        nextGrow !== Number.POSITIVE_INFINITY ? `Panen terdekat: **${formatDuration(nextGrow)}**` : 'Panen terdekat: **belum ada tanaman aktif**',
+        '', lines.join('\n'),
+      ].join('\n');
+      await message.reply({ embeds: [infoEmbed(`${config.emoji.palm} Kebun ${message.author.username}`, summary)] });
+    }
   },
 };

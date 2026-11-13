@@ -1,8 +1,10 @@
+import { AttachmentBuilder } from 'discord.js';
 import type { Command } from '../types/command.js';
 import { getLeaderboard } from '../services/economy.service.js';
 import { config } from '../config/env.js';
 import { formatNumber } from '../utils/format.js';
 import { infoEmbed } from '../utils/embed.js';
+import { renderLeaderboardCard } from '../services/visual.service.js';
 
 export const leaderboardCommand: Command = {
   name: 'leaderboard',
@@ -16,7 +18,12 @@ export const leaderboardCommand: Command = {
       await message.reply({ embeds: [infoEmbed('Leaderboard', 'Belum ada pemain.')] });
       return;
     }
-    const lines = entries.map((entry, index) => `${index + 1}. **${entry.username}** — ${formatNumber(entry.balance)} ${config.emoji.coin}`);
-    await message.reply({ embeds: [infoEmbed(`${config.emoji.coin} Leaderboard`, lines.join('\n'))] });
+    try {
+      const image = await renderLeaderboardCard(entries);
+      await message.reply({ files: [new AttachmentBuilder(image, { name: 'leaderboard.png' })] });
+    } catch {
+      const lines = entries.map((entry, index) => `${index + 1}. **${entry.username}** — ${formatNumber(entry.balance)} ${config.emoji.coin}`);
+      await message.reply({ embeds: [infoEmbed(`${config.emoji.coin} Leaderboard`, lines.join('\n'))] });
+    }
   },
 };
