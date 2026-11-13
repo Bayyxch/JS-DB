@@ -15,7 +15,6 @@ const CATEGORIES = [
   { label: 'Seeds / Benih', value: 'SEEDS' },
   { label: 'Items / Boost', value: 'ITEMS' },
   { label: 'Equipment', value: 'EQUIPMENT' },
-  { label: 'Special', value: 'SPECIAL' },
 ] as const;
 const PAGE_SIZE = 5;
 
