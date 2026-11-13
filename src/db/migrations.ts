@@ -176,4 +176,37 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 5,
+    name: 'global_companies_and_cooperative_progress',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS companies (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+          owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          total_harvested INTEGER NOT NULL DEFAULT 0 CHECK (total_harvested >= 0),
+          created_at INTEGER NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS company_members (
+          user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+          role TEXT NOT NULL DEFAULT 'MEMBER' CHECK (role IN ('OWNER', 'MEMBER')),
+          joined_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_company_members_company
+          ON company_members(company_id, joined_at ASC);
+        CREATE TABLE IF NOT EXISTS company_invites (
+          company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+          target_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          inviter_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          created_at INTEGER NOT NULL,
+          expires_at INTEGER NOT NULL,
+          PRIMARY KEY (company_id, target_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_company_invites_target
+          ON company_invites(target_id, expires_at ASC);
+      `);
+    },
+  },
 ];
