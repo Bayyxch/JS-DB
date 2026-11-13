@@ -417,3 +417,72 @@ const palmOnlyMigration: Migration =   {
 };
 
 migrations.push(palmOnlyMigration);
+
+const progressionAndEconomyMigration: Migration = {
+  version: 10,
+  name: 'player_progression_gems_items_and_admin',
+  up: (db) => {
+    db.exec(`
+      ALTER TABLE wallets ADD COLUMN gems INTEGER NOT NULL DEFAULT 0 CHECK (gems >= 0);
+      ALTER TABLE items ADD COLUMN category TEXT NOT NULL DEFAULT 'MISC';
+      ALTER TABLE items ADD COLUMN exp_bonus INTEGER NOT NULL DEFAULT 0 CHECK (exp_bonus >= 0);
+      ALTER TABLE items ADD COLUMN equipment_slot TEXT;
+      ALTER TABLE items ADD COLUMN effect TEXT NOT NULL DEFAULT '';
+
+      CREATE TABLE IF NOT EXISTS player_progress (
+        user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        level INTEGER NOT NULL DEFAULT 1 CHECK (level >= 1),
+        xp INTEGER NOT NULL DEFAULT 0 CHECK (xp >= 0)
+      );
+      INSERT OR IGNORE INTO player_progress (user_id, level, xp)
+      SELECT id, 1, 0 FROM users;
+
+      CREATE TABLE IF NOT EXISTS player_equipment (
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        slot TEXT NOT NULL,
+        item_id TEXT NOT NULL REFERENCES items(id),
+        equipped_at INTEGER NOT NULL,
+        PRIMARY KEY (user_id, slot)
+      );
+
+      CREATE TABLE IF NOT EXISTS banned_users (
+        user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        reason TEXT NOT NULL DEFAULT '',
+        banned_by TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS admin_audit_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id TEXT NOT NULL,
+        target_id TEXT,
+        action TEXT NOT NULL,
+        details TEXT NOT NULL DEFAULT '{}',
+        created_at INTEGER NOT NULL
+      );
+
+      UPDATE items SET category = CASE
+        WHEN type = 'SEED' THEN 'SEEDS'
+        WHEN type = 'FOOD' THEN 'ITEMS'
+        WHEN type = 'RESOURCE' THEN 'RESOURCES'
+        WHEN type = 'LEGACY' THEN 'LEGACY'
+        ELSE 'ITEMS' END;
+
+      INSERT OR IGNORE INTO items (id, name, type, buy_price, sell_price, description, category, effect)
+      VALUES
+        ('ultimate_palm', 'Ultimate Palm', 'COLLECTIBLE', 0, 0, 'Tandan sawit super langka. Bisa ditukar menjadi Gem.', 'SPECIAL', 'SELL_FOR_GEMS'),
+        ('growth_boost', 'Growth Booster', 'BOOST', 650, 0, 'Mempercepat tanaman yang sedang tumbuh selama 10 detik.', 'ITEMS', 'GROWTH_10S'),
+        ('lucky_fertilizer', 'Lucky Fertilizer', 'BOOST', 950, 0, 'Meningkatkan peluang mendapatkan Ultimate Palm pada panen berikutnya.', 'ITEMS', 'LUCKY_NEXT_HARVEST'),
+        ('gold_glove', 'Gold Glove', 'EQUIPMENT', 3000, 0, 'Sarung tangan emas yang memberi bonus EXP 10%.', 'EQUIPMENT', 'EQUIP'),
+        ('lucky_necklace', 'Lucky Necklace', 'EQUIPMENT', 5000, 0, 'Kalung keberuntungan yang meningkatkan peluang rare drop.', 'EQUIPMENT', 'EQUIP'),
+        ('currency_sc', 'SawitCoin', 'CURRENCY', 0, 0, 'Aset mata uang untuk trade.', 'HIDDEN', ''),
+        ('currency_gem', 'Gem', 'CURRENCY', 0, 0, 'Aset mata uang langka untuk trade.', 'HIDDEN', '');
+
+      UPDATE items SET equipment_slot = 'HAND', exp_bonus = 10 WHERE id = 'gold_glove';
+      UPDATE items SET equipment_slot = 'ACCESSORY' WHERE id = 'lucky_necklace';
+      UPDATE crops SET grow_seconds = 30 WHERE id = 'basic';
+    `);
+  },
+};
+
+migrations.push(progressionAndEconomyMigration);
+
