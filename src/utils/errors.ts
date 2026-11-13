@@ -26,12 +26,12 @@ export function friendlyError(error: unknown): string {
     case 'TRADE_LIMIT': return 'Lo sudah punya 5 penawaran trade aktif. Selesaikan atau batalkan dulu.';
     case 'TRADE_TARGET_INVALID': return 'Pilih pemain sungguhan, bukan bot, sebagai tujuan trade.';
     case 'TRADE_SELF': return 'Lo nggak bisa membuat penawaran ke diri sendiri.';
-    case 'TRADE_SAME_ITEM': return 'Pilih dua jenis item yang berbeda untuk ditukar.';
+    case 'TRADE_SAME_ITEM': return 'Pilih dua aset yang berbeda untuk ditukar.';
     case 'TRADE_ID_INVALID': return 'ID penawaran trade tidak valid.';
     case 'TRADE_NOT_FOUND': return 'Penawaran tidak ditemukan, sudah selesai, atau kedaluwarsa.';
     case 'TRADE_NOT_YOURS': return 'Penawaran ini bukan untuk atau milik akun lo.';
-    case 'TRADE_TARGET_REQUIRED': return 'Tandai pemain tujuan. Contoh: !trade offer @pemain tbs 20 corn 5.';
-    case 'TRADE_FORMAT_INVALID': return 'Format: !trade offer @pemain item jumlah item jumlah.';
+    case 'TRADE_TARGET_REQUIRED': return 'Tandai pemain tujuan. Contoh: !trade offer @pemain tbs 20 sc 500.';
+    case 'TRADE_FORMAT_INVALID': return 'Format: !trade offer @pemain <aset> <jumlah> <aset> <jumlah>. Aset bisa item, sc, atau gem.';
     case 'MARKET_VOLUME_LIMIT': return 'Volume perdagangan melewati batas aman sistem.';
     case 'COMPANY_NAME_TAKEN': return 'Nama koperasi itu sudah digunakan.';
     case 'COMPANY_NAME_INVALID': return 'Nama koperasi harus 3–24 karakter dan hanya boleh berisi huruf, angka, spasi, garis bawah, atau tanda hubung.';
