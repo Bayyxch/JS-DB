@@ -353,6 +353,22 @@ export const migrations: Migration[] = [
       // economy into a palm-only plantation loop.
       db.exec(`
         INSERT INTO inventory (user_id, item_id, quantity)
+        SELECT proposer_id, give_item_id, SUM(give_quantity)
+        FROM trade_offers
+        WHERE status = 'PENDING'
+          AND (give_item_id IN ('seed_corn', 'seed_rice', 'seed_cocoa', 'corn', 'rice', 'cocoa')
+            OR want_item_id IN ('seed_corn', 'seed_rice', 'seed_cocoa', 'corn', 'rice', 'cocoa'))
+        GROUP BY proposer_id, give_item_id
+        ON CONFLICT(user_id, item_id) DO UPDATE
+          SET quantity = quantity + excluded.quantity;
+
+        UPDATE trade_offers
+        SET status = 'CANCELLED'
+        WHERE status = 'PENDING'
+          AND (give_item_id IN ('seed_corn', 'seed_rice', 'seed_cocoa', 'corn', 'rice', 'cocoa')
+            OR want_item_id IN ('seed_corn', 'seed_rice', 'seed_cocoa', 'corn', 'rice', 'cocoa'));
+
+        INSERT INTO inventory (user_id, item_id, quantity)
         SELECT user_id, 'seed_basic', SUM(quantity)
         FROM inventory
         WHERE item_id IN ('seed_corn', 'seed_rice', 'seed_cocoa') AND quantity > 0
