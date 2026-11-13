@@ -213,4 +213,25 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 6,
+    name: 'global_player_marketplace',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS market_listings (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          seller_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          item_id TEXT NOT NULL REFERENCES items(id),
+          quantity INTEGER NOT NULL CHECK (quantity > 0),
+          unit_price INTEGER NOT NULL CHECK (unit_price > 0),
+          created_at INTEGER NOT NULL,
+          expires_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_market_listings_active
+          ON market_listings(expires_at ASC, unit_price ASC, created_at ASC);
+        CREATE INDEX IF NOT EXISTS idx_market_listings_seller
+          ON market_listings(seller_id, created_at DESC);
+      `);
+    },
+  },
 ];
