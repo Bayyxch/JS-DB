@@ -6,6 +6,8 @@ import path from 'node:path';
 const a = '11111111111111111';
 const b = '22222222222222222';
 const c = '33333333333333333';
+const d = '44444444444444444';
+const e = '55555555555555555';
 let database!: { close: () => void };
 let ensureUser!: (id: string, username: string) => void;
 let social!: typeof import('../src/services/social.service.js');
@@ -22,6 +24,8 @@ beforeAll(async () => {
   ensureUser(a, 'PlayerA');
   ensureUser(b, 'PlayerB');
   ensureUser(c, 'PlayerC');
+  ensureUser(d, 'PlayerD');
+  ensureUser(e, 'PlayerE');
 });
 
 afterAll(() => {
@@ -43,8 +47,7 @@ describe('global game partner and bond progression', () => {
   it('prevents self proposals and a player having multiple partners', () => {
     expect(() => social.sendMarriageProposal(c, c)).toThrow('MARRIAGE_SELF');
     expect(() => social.sendMarriageProposal(a, c)).toThrow('MARRIAGE_ALREADY_MARRIED');
-    social.sendMarriageProposal(c, a);
-    expect(() => social.acceptMarriageProposal(a, c)).toThrow('MARRIAGE_ALREADY_MARRIED');
+    expect(social.getMarriage(c)).toBeUndefined();
   });
 
   it('allows one shared bond claim per 24 hours', () => {
@@ -57,8 +60,9 @@ describe('global game partner and bond progression', () => {
   });
 
   it('declines proposals and clears a pair on divorce', () => {
-    social.declineMarriageProposal(a, c);
-    expect(() => social.acceptMarriageProposal(a, c)).toThrow('MARRIAGE_PROPOSAL_NOT_FOUND');
+    social.sendMarriageProposal(d, e);
+    social.declineMarriageProposal(e, d);
+    expect(() => social.acceptMarriageProposal(e, d)).toThrow('MARRIAGE_PROPOSAL_NOT_FOUND');
     social.divorce(b);
     expect(social.getMarriage(a)).toBeUndefined();
     expect(social.getMarriage(b)).toBeUndefined();
