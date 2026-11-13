@@ -1,7 +1,7 @@
 import { AttachmentBuilder } from 'discord.js';
 import type { Command } from '../types/command.js';
 import { config } from '../config/env.js';
-import { getInventory, getGemBalance, getPlayerProgress } from '../services/economy.service.js';
+import { getInventory, getGemBalance, getPlayerProgress, getEquippedItems } from '../services/economy.service.js';
 import { formatNumber } from '../utils/format.js';
 import { infoEmbed } from '../utils/embed.js';
 import { renderInventoryCard } from '../services/visual.service.js';
