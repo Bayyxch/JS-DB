@@ -38,7 +38,7 @@ const economy = {
   startingSeeds: intEnv('STARTING_SEEDS', 8),
   startingPlots: intEnv('STARTING_PLOTS', 4),
   basicSeedPrice: intEnv('BASIC_SEED_PRICE', 300),
-  basicGrowMinutes,
+  basicGrowSeconds,
   basicMinYield: intEnv('BASIC_MIN_YIELD', 6),
   basicMaxYield: intEnv('BASIC_MAX_YIELD', 8),
   tbsSellPrice: intEnv('TBS_SELL_PRICE', 70),
@@ -57,6 +57,7 @@ validateEconomyConfig(economy);
 export const config = {
   token: required('DISCORD_TOKEN'),
   guildId: process.env.DISCORD_GUILD_ID?.trim() || null,
+  ownerId: process.env.OWNER_ID?.trim() || null,
   databasePath: process.env.DATABASE_PATH?.trim() || './data/sawit.sqlite',
   prefix,
   economy,
