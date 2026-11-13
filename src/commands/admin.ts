@@ -1,5 +1,6 @@
 import type { Command } from '../types/command.js';
 import { config } from '../config/env.js';
+import { ensureUser } from '../services/economy.service.js';
 import { adjustAdminAsset, adjustAdminItem, banUser, unbanUser } from '../services/admin.service.js';
 import { errorEmbed, infoEmbed, successEmbed } from '../utils/embed.js';
 import { friendlyError } from '../utils/errors.js';
@@ -39,6 +40,7 @@ export const adminCommand: Command = {
         return;
       }
       if (action === 'addmoney' || action === 'removemoney' || action === 'addgem' || action === 'removegem') {
+        ensureUser(target.id, target.username);
         const amount = parseAmount(args[2]);
         const delta = action.startsWith('remove') ? -amount : amount;
         const asset = action.endsWith('gem') ? 'GEM' : 'SC';
@@ -47,6 +49,7 @@ export const adminCommand: Command = {
         return;
       }
       if (action === 'additem' || action === 'removeitem') {
+        ensureUser(target.id, target.username);
         const itemId = args[2]?.toLowerCase();
         const amount = parseAmount(args[3]);
         if (!itemId) throw new Error('ADMIN_ITEM_FORMAT');
