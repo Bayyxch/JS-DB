@@ -5,6 +5,18 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'HOUSE_MAX_LEVEL': return 'Rumah lo sudah mencapai level maksimum.';
+    case 'PET_SPECIES_NOT_FOUND': return 'Jenis hewan itu tidak tersedia di tempat adopsi.';
+    case 'PET_LIMIT': return 'Lo sudah memiliki batas maksimum 5 hewan.';
+    case 'PET_NOT_FOUND': return 'Hewan itu tidak ditemukan di daftar milik lo.';
+    case 'PET_MAX_LEVEL': return 'Hewan ini sudah mencapai level maksimum.';
+    case 'PET_FOOD_REQUIRED': return 'Pakan habis. Beli Pakan Hewan di !shop.';
+    case 'PET_ID_INVALID': return 'ID hewan tidak valid.';
+    case 'PET_SPECIES_REQUIRED': return 'Pilih jenis hewan. Contoh: !pet adopt cat.';
+    case 'ADVENTURE_ZONE_NOT_FOUND': return 'Zona petualangan tidak ditemukan.';
+    case 'ADVENTURE_ZONE_LOCKED': return 'Zona ini belum terbuka. Tingkatkan rumah dengan !rumah upgrade.';
+    case 'ADVENTURE_ZONE_REQUIRED': return 'Pilih zona. Contoh: !adventure explore river.';
+    case 'INVALID_TIMESTAMP': return 'Waktu yang diminta tidak valid.';
     case 'TRADE_LIMIT': return 'Lo sudah punya 5 penawaran trade aktif. Selesaikan atau batalkan dulu.';
     case 'TRADE_TARGET_INVALID': return 'Pilih pemain sungguhan, bukan bot, sebagai tujuan trade.';
     case 'TRADE_SELF': return 'Lo nggak bisa membuat penawaran ke diri sendiri.';
