@@ -34,7 +34,10 @@ Node.js 24 is intentionally targeted because it is an LTS line in October 2026. 
 - `!daily`
 - `!work`
 - `!leaderboard`
-- Global player profiles with editable bio\n- Global friendship requests, accept/decline, list, and remove\n- Game partner proposals, acceptance, status, divorce, and shared bond progression\n- Per-command cooldowns
+- Global player profiles with editable bio
+- Global friendship requests, accept/decline, list, and remove
+- Game partner proposals, acceptance, status, divorce, and shared bond progression
+- Per-command cooldowns
 - Atomic economy transactions
 - Transaction ledger for every balance change
 - SQLite WAL mode and foreign keys
@@ -88,7 +91,11 @@ npm run dev
 
 Aliases are also available for common commands, such as `!saldo`, `!farm`, `!inv`, `!beli`, `!jual`, `!luas`, `!lb`, and `!harvest`.
 
-## Global player and social system\n\nPlayer accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters. Optional game-partner status is global too; both players must accept a proposal flow, and bond points can be claimed once every 24 hours.\n\n## Economy rules
+## Global player and social system
+
+Player accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters. Optional game-partner status is global too; both players must accept a proposal flow, and bond points can be claimed once every 24 hours.
+
+## Economy rules
 
 The MVP deliberately avoids printing large amounts of free money. The primary farming faucet is the sale of TBS. Seeds are a recurring sink and land expansion is a large permanent sink. `!work` and `!daily` are intentionally small compared with farming so they support new players without becoming the dominant money source.
 
