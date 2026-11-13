@@ -22,13 +22,16 @@ export const tradeCommand: Command = {
       if (mentionedUser?.bot) throw new Error('TRADE_TARGET_INVALID');
       const targetId = mentionedUser?.id ?? args[1];
       if (!targetId || !/^\d{17,20}$/.test(targetId)) throw new Error('TRADE_TARGET_REQUIRED');
-      const [giveItem, giveRaw, wantItem, wantRaw] = args.slice(2);
+      const [giveRawItem, giveRaw, wantRawItem, wantRaw] = args.slice(2);
+      const normalizeAsset = (value: string | undefined) => value?.toLowerCase() === 'sc' ? 'currency_sc' : value?.toLowerCase() === 'gem' ? 'currency_gem' : value?.toLowerCase();
+      const giveItem = normalizeAsset(giveRawItem);
+      const wantItem = normalizeAsset(wantRawItem);
       const giveQuantity = Number(giveRaw);
       const wantQuantity = Number(wantRaw);
       if (!giveItem || !wantItem || !Number.isSafeInteger(giveQuantity) || !Number.isSafeInteger(wantQuantity)) {
         throw new Error('TRADE_FORMAT_INVALID');
       }
-      const offerId = createTradeOffer(userId, targetId, giveItem.toLowerCase(), giveQuantity, wantItem.toLowerCase(), wantQuantity);
+      const offerId = createTradeOffer(userId, targetId, giveItem, giveQuantity, wantItem, wantQuantity);
       await message.reply({ embeds: [successEmbed('Penawaran dibuat', `Penawaran **#${offerId}** dikirim ke <@${targetId}>. Item yang ditawarkan diamankan sementara. Berlaku 48 jam.`)] });
       return;
     }
@@ -56,7 +59,7 @@ export const tradeCommand: Command = {
     }
 
     await message.reply({ embeds: [infoEmbed('Cara pakai Trade', [
-      '`!trade offer @pemain tbs 20 corn 5`',
+      '`!trade offer @pemain tbs 20 sc 500`\n      '`!trade offer @pemain gem 2 gold_glove 1`'',
       '`!trade list`',
       '`!trade accept <id>`',
       '`!trade cancel <id>`',
