@@ -23,7 +23,7 @@ export const inventoryCommand: Command = {
       const lines = items.length
         ? items.map((item) => `**${item.name}** — ${formatNumber(item.quantity)}`)
         : ['Inventory masih kosong.'];
-      await message.reply({ embeds: [infoEmbed(`${config.emoji.seed} Inventory`, lines.join('\n'))] });
+      await message.reply({ embeds: [summary, infoEmbed(`${config.emoji.seed} Inventory`, lines.join('\n'))] });
     }
   },
 };
