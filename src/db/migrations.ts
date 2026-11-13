@@ -446,7 +446,7 @@ const progressionAndEconomyMigration: Migration = {
       );
 
       CREATE TABLE IF NOT EXISTS banned_users (
-        user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        user_id TEXT PRIMARY KEY,
         reason TEXT NOT NULL DEFAULT '',
         banned_by TEXT NOT NULL,
         created_at INTEGER NOT NULL
