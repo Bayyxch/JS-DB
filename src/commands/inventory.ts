@@ -15,7 +15,9 @@ export const inventoryCommand: Command = {
     const items = getInventory(userId);
     const gems = getGemBalance(userId);
     const progress = getPlayerProgress(userId);
-    const summary = infoEmbed('Aset Pemain', `Level ${progress.level} • EXP ${formatNumber(progress.xp)}/${formatNumber(progress.nextLevelXp)}\nGem: ${formatNumber(gems)}`);
+    const equipped = getEquippedItems(userId);
+    const equippedText = equipped.length ? equipped.map((item) => `${item.name} (${item.slot})`).join(', ') : 'Belum ada';
+    const summary = infoEmbed('Aset Pemain', `Level ${progress.level} • EXP ${formatNumber(progress.xp)}/${formatNumber(progress.nextLevelXp)}\\nGem: ${formatNumber(gems)}\\nEquipment: ${equippedText}`);
     try {
       const image = await renderInventoryCard(message.author.username, items);
       await message.reply({ files: [new AttachmentBuilder(image, { name: 'inventory.png' })], embeds: [summary] });
