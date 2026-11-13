@@ -234,4 +234,48 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 7,
+    name: 'adventure_homes_pets_and_progression',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS player_adventure (
+          user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          xp INTEGER NOT NULL DEFAULT 0 CHECK (xp >= 0),
+          expeditions_completed INTEGER NOT NULL DEFAULT 0 CHECK (expeditions_completed >= 0)
+        );
+        CREATE TABLE IF NOT EXISTS player_homes (
+          user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          level INTEGER NOT NULL DEFAULT 1 CHECK (level BETWEEN 1 AND 5),
+          created_at INTEGER NOT NULL,
+          upgraded_at INTEGER NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS pet_species (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          rarity TEXT NOT NULL CHECK (rarity IN ('common', 'uncommon', 'rare')),
+          description TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS player_pets (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          owner_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          species_id TEXT NOT NULL REFERENCES pet_species(id),
+          name TEXT NOT NULL,
+          level INTEGER NOT NULL DEFAULT 1 CHECK (level >= 1),
+          xp INTEGER NOT NULL DEFAULT 0 CHECK (xp >= 0),
+          adopted_at INTEGER NOT NULL,
+          last_fed_at INTEGER,
+          UNIQUE(owner_id, name)
+        );
+        CREATE INDEX IF NOT EXISTS idx_player_pets_owner
+          ON player_pets(owner_id, adopted_at ASC);
+        INSERT OR IGNORE INTO pet_species (id, name, rarity, description)
+        VALUES
+          ('cat', 'Kucing Kebun', 'common', 'Teman santai yang suka tidur di teras.'),
+          ('dog', 'Anjing Penjaga', 'common', 'Setia menemani aktivitas kebun.'),
+          ('rabbit', 'Kelinci Ladang', 'uncommon', 'Lincah dan suka area rumput.'),
+          ('owl', 'Burung Hantu', 'rare', 'Teman malam yang langka dan tenang.');
+      `);
+    },
+  },
 ];
