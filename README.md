@@ -39,6 +39,7 @@ Node.js 24 is intentionally targeted because it is an LTS line in October 2026. 
 - Global game-partner proposals, acceptance, status, divorce, and shared bond progression
 - Multiple crop types: palm, corn, rice, and cocoa
 - Global crop discovery collection and cumulative harvest records
+- Global cooperative companies with invites, member roles, shared harvest progression, and leaderboard
 - Per-command cooldowns
 - Atomic economy transactions
 - Transaction ledger for every balance change
@@ -95,7 +96,7 @@ Aliases are also available for common commands, such as `!saldo`, `!farm`, `!inv
 
 ## Global player and social system
 
-Player accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters. Game-partner status is global too: proposals require acceptance, each player can have one active partner, and the pair shares one bond claim every 24 hours. Crop discoveries and lifetime harvested quantities are also stored globally per player.
+Player accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters. Game-partner status is global too: proposals require acceptance, each player can have one active partner, and the pair shares one bond claim every 24 hours. Crop discoveries and lifetime harvested quantities are also stored globally per player. Players can join one global cooperative at a time; member harvests contribute to its shared progress. Cooperatives support owner-managed invites, ownership transfer, member removal, and disbanding.
 
 ## Economy rules
 
