@@ -93,6 +93,93 @@ export function getBalance(userId: string): number {
   return row?.balance ?? 0;
 }
 
+export interface PlayerProgress {
+  level: number;
+  xp: number;
+  nextLevelXp: number;
+}
+
+function addPlayerXpInTransaction(userId: string, baseAmount: number): { awarded: number; level: number; xp: number; levelsGained: number } {
+  const bonus = db.prepare(`
+    SELECT COALESCE(SUM(i.exp_bonus), 0) AS bonus
+    FROM player_equipment e JOIN items i ON i.id = e.item_id
+    WHERE e.user_id = ?
+  `).get(userId) as { bonus: number };
+  const awarded = Math.max(0, Math.floor(baseAmount * (1 + bonus.bonus / 100)));
+  const current = db.prepare('SELECT level, xp FROM player_progress WHERE user_id = ?')
+    .get(userId) as { level: number; xp: number } | undefined;
+  let level = current?.level ?? 1;
+  let xp = (current?.xp ?? 0) + awarded;
+  const initialLevel = level;
+  while (xp >= level * 100) {
+    xp -= level * 100;
+    level += 1;
+  }
+  db.prepare(`
+    INSERT INTO player_progress (user_id, level, xp) VALUES (?, ?, ?)
+    ON CONFLICT(user_id) DO UPDATE SET level = excluded.level, xp = excluded.xp
+  `).run(userId, level, xp);
+  return { awarded, level, xp, levelsGained: level - initialLevel };
+}
+
+export function getPlayerProgress(userId: string): PlayerProgress {
+  const row = db.prepare('SELECT level, xp FROM player_progress WHERE user_id = ?')
+    .get(userId) as { level: number; xp: number } | undefined;
+  const level = row?.level ?? 1;
+  return { level, xp: row?.xp ?? 0, nextLevelXp: level * 100 };
+}
+
+export function grantPlayerXp(userId: string, amount: number) {
+  if (!Number.isSafeInteger(amount) || amount < 0) throw new Error('INVALID_AMOUNT');
+  return db.transaction(() => addPlayerXpInTransaction(userId, amount))();
+}
+
+export function getEquippedItems(userId: string): Array<{ name: string; slot: string }> {
+  return db.prepare(`
+    SELECT i.name, e.slot
+    FROM player_equipment e JOIN items i ON i.id = e.item_id
+    WHERE e.user_id = ?
+    ORDER BY e.slot ASC
+  `).all(userId) as Array<{ name: string; slot: string }>;
+}
+
+export function getGemBalance(userId: string): number {
+  const row = db.prepare('SELECT gems FROM wallets WHERE user_id = ?').get(userId) as { gems: number } | undefined;
+  return row?.gems ?? 0;
+}
+
+export function creditGems(userId: string, amount: number): number {
+  if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error('INVALID_AMOUNT');
+  return db.transaction(() => {
+    const result = db.prepare('UPDATE wallets SET gems = gems + ? WHERE user_id = ? AND gems <= ?')
+      .run(amount, userId, Number.MAX_SAFE_INTEGER - amount);
+    if (result.changes !== 1) throw new Error('BALANCE_LIMIT');
+    return getGemBalance(userId);
+  })();
+}
+
+export function debitGems(userId: string, amount: number): number {
+  if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error('INVALID_AMOUNT');
+  return db.transaction(() => {
+    const result = db.prepare('UPDATE wallets SET gems = gems - ? WHERE user_id = ? AND gems >= ?')
+      .run(amount, userId, amount);
+    if (result.changes !== 1) throw new Error('INSUFFICIENT_GEMS');
+    return getGemBalance(userId);
+  })();
+}
+
+export function sellUltimatePalm(userId: string, quantity: number): { gems: number; total: number } {
+  if (!Number.isSafeInteger(quantity) || quantity <= 0 || quantity > 1_000_000) throw new Error('INVALID_QUANTITY');
+  return db.transaction(() => {
+    changeInventory(db, userId, 'ultimate_palm', -quantity);
+    const total = quantity * 5;
+    const result = db.prepare('UPDATE wallets SET gems = gems + ? WHERE user_id = ? AND gems <= ?')
+      .run(total, userId, Number.MAX_SAFE_INTEGER - total);
+    if (result.changes !== 1) throw new Error('BALANCE_LIMIT');
+    return { gems: getGemBalance(userId), total };
+  })();
+}
+
 export function ensureUser(userId: string, username: string): void {
   const timestamp = now();
   const tx = db.transaction(() => {
@@ -334,6 +421,10 @@ export function harvest(userId: string): {
   details: HarvestDetail[];
   event: ReturnType<typeof resolveHarvestEvent>;
   worldEventName: string;
+  rareDrop: number;
+  xpAwarded: number;
+  level: number;
+  levelsGained: number;
 } {
   return db.transaction(() => {
     const plots = getFarmPlots(userId).filter((plot) => plot.crop_id !== null);
@@ -407,8 +498,24 @@ export function harvest(userId: string): {
     }
 
     const items = [...totals.values()];
+    const luckyFertilizer = getInventoryItem(userId, 'lucky_fertilizer') > 0;
+    if (luckyFertilizer) changeInventory(db, userId, 'lucky_fertilizer', -1);
+    const equipmentLuck = db.prepare(`
+      SELECT COUNT(*) AS count FROM player_equipment WHERE user_id = ? AND item_id = 'lucky_necklace'
+    `).get(userId) as { count: number };
+    const rareChance = 0.005 + (luckyFertilizer ? 0.05 : 0) + (equipmentLuck.count ? 0.005 : 0);
+    const rareDrop = Math.random() < rareChance ? 1 : 0;
+    if (rareDrop) {
+      changeInventory(db, userId, 'ultimate_palm', rareDrop);
+      items.push({ itemId: 'ultimate_palm', itemName: 'Ultimate Palm', quantity: rareDrop });
+    }
+    const progression = addPlayerXpInTransaction(userId, ready.length * 5);
     return {
       harvested: ready.length,
+      rareDrop,
+      xpAwarded: progression.awarded,
+      level: progression.level,
+      levelsGained: progression.levelsGained,
       tbs: totals.get('tbs')?.quantity ?? 0,
       items,
       event,
@@ -470,8 +577,39 @@ export function work(userId: string): { reward: number; balance: number } {
   })();
 }
 
-export function getShop(): ItemRow[] {
-  return db.prepare('SELECT * FROM items WHERE buy_price > 0 ORDER BY buy_price ASC').all() as ItemRow[];
+export function equipItem(userId: string, itemId: string): { name: string; slot: string } {
+  return db.transaction(() => {
+    const item = db.prepare("SELECT id, name, equipment_slot FROM items WHERE id = ? AND category = 'EQUIPMENT'")
+      .get(itemId) as { id: string; name: string; equipment_slot: string | null } | undefined;
+    if (!item?.equipment_slot) throw new Error('EQUIPMENT_NOT_FOUND');
+    if (getInventoryItem(userId, itemId) < 1) throw new Error('INSUFFICIENT_ITEM');
+    changeInventory(db, userId, itemId, -1);
+    const previous = db.prepare('SELECT item_id FROM player_equipment WHERE user_id = ? AND slot = ?')
+      .get(userId, item.equipment_slot) as { item_id: string } | undefined;
+    if (previous) changeInventory(db, userId, previous.item_id, 1);
+    db.prepare(`
+      INSERT INTO player_equipment (user_id, slot, item_id, equipped_at) VALUES (?, ?, ?, ?)
+      ON CONFLICT(user_id, slot) DO UPDATE SET item_id = excluded.item_id, equipped_at = excluded.equipped_at
+    `).run(userId, item.equipment_slot, itemId, now());
+    return { name: item.name, slot: item.equipment_slot };
+  })();
+}
+
+export function useGrowthBooster(userId: string): number {
+  return db.transaction(() => {
+    if (getInventoryItem(userId, 'growth_boost') < 1) throw new Error('INSUFFICIENT_ITEM');
+    const planted = db.prepare('SELECT COUNT(*) AS count FROM farm_plots WHERE user_id = ? AND crop_id IS NOT NULL')
+      .get(userId) as { count: number };
+    if (!planted.count) throw new Error('NO_PLANTED_CROPS');
+    changeInventory(db, userId, 'growth_boost', -1);
+    db.prepare('UPDATE farm_plots SET planted_at = MAX(0, planted_at - 10000) WHERE user_id = ? AND crop_id IS NOT NULL')
+      .run(userId);
+    return planted.count;
+  })();
+}
+
+export function getShop(category = 'SEEDS'): ItemRow[] {
+  return db.prepare('SELECT * FROM items WHERE buy_price > 0 AND category = ? ORDER BY buy_price ASC, id ASC').all(category.toUpperCase()) as ItemRow[];
 }
 
 export function getInventory(userId: string): Array<ItemRow & { quantity: number }> {

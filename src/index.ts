@@ -34,6 +34,13 @@ import { petCommand } from './commands/pet.js';
 import { adventureCommand } from './commands/adventure.js';
 import { eventCommand } from './commands/event.js';
 import { createHelpCommand, handleHelpSelectInteraction } from './commands/help.js';
+import { handleAdventureSelectInteraction } from './commands/adventure.js';
+import { handleShopInteraction } from './commands/shop.js';
+import { adminCommand } from './commands/admin.js';
+import { levelCommand } from './commands/level.js';
+import { useCommand } from './commands/use.js';
+import { equipCommand } from './commands/equip.js';
+import { isUserBanned } from './services/admin.service.js';
 
 runMigrations();
 
@@ -54,6 +61,10 @@ const baseCommands: Command[] = [
   petCommand,
   adventureCommand,
   eventCommand,
+  adminCommand,
+  levelCommand,
+  useCommand,
+  equipCommand,
   balanceCommand,
   kebunCommand,
   statusCommand,
@@ -82,13 +93,26 @@ client.once('ready', () => {
 });
 
 client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isStringSelectMenu()) return;
   try {
-    await handleHelpSelectInteraction(interaction, baseCommands);
+    if (interaction.isStringSelectMenu()) {
+      if (interaction.customId.startsWith('adventure-zone:')) {
+        await handleAdventureSelectInteraction(interaction);
+        return;
+      }
+      if (interaction.customId.startsWith('shop-category:')) {
+        await handleShopInteraction(interaction);
+        return;
+      }
+      await handleHelpSelectInteraction(interaction, baseCommands);
+      return;
+    }
+    if (interaction.isButton() && interaction.customId.startsWith('shop-page:')) {
+      await handleShopInteraction(interaction);
+    }
   } catch (error) {
-    logger.error('Help menu interaction failed', error);
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({ content: 'Menu bantuan gagal dimuat. Coba jalankan !help lagi.', ephemeral: true }).catch(() => undefined);
+    logger.error('Component interaction failed', error);
+    if (interaction.isRepliable() && !interaction.replied && !interaction.deferred) {
+      await interaction.reply({ content: 'Menu gagal dimuat. Coba jalankan command lagi.', ephemeral: true }).catch(() => undefined);
     }
   }
 });
@@ -109,6 +133,8 @@ client.on('messageCreate', async (message) => {
   if (!command) return;
 
   try {
+    if (isUserBanned(message.author.id)) return;
+
     // Create the global account before applying a persistent user-scoped cooldown.
     ensureUser(message.author.id, message.author.username);
 

@@ -30,16 +30,15 @@ function emojiEnv(name: string, fallback: string): string {
 const prefix = process.env.PREFIX?.trim() || '!';
 validatePrefix(prefix);
 
-// Plant growth is deliberately capped: this is a Discord economy loop, not a
-// real-time farming simulator. Keep custom deployments between 1 and 30 minutes.
-const basicGrowMinutes = Math.min(intEnv('BASIC_GROW_MINUTES', 10), 30);
+// Palm growth stays intentionally short: default 30 seconds, hard cap 60 seconds.
+const basicGrowSeconds = Math.min(intEnv('BASIC_GROW_SECONDS', 30), 60);
 
 const economy = {
   startingBalance: intEnv('STARTING_BALANCE', 2500),
   startingSeeds: intEnv('STARTING_SEEDS', 8),
   startingPlots: intEnv('STARTING_PLOTS', 4),
   basicSeedPrice: intEnv('BASIC_SEED_PRICE', 300),
-  basicGrowMinutes,
+  basicGrowSeconds,
   basicMinYield: intEnv('BASIC_MIN_YIELD', 6),
   basicMaxYield: intEnv('BASIC_MAX_YIELD', 8),
   tbsSellPrice: intEnv('TBS_SELL_PRICE', 70),
@@ -58,6 +57,7 @@ validateEconomyConfig(economy);
 export const config = {
   token: required('DISCORD_TOKEN'),
   guildId: process.env.DISCORD_GUILD_ID?.trim() || null,
+  ownerId: process.env.OWNER_ID?.trim() || null,
   databasePath: process.env.DATABASE_PATH?.trim() || './data/sawit.sqlite',
   prefix,
   economy,

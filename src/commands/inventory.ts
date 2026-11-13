@@ -1,7 +1,7 @@
 import { AttachmentBuilder } from 'discord.js';
 import type { Command } from '../types/command.js';
 import { config } from '../config/env.js';
-import { getInventory } from '../services/economy.service.js';
+import { getInventory, getGemBalance, getPlayerProgress, getEquippedItems } from '../services/economy.service.js';
 import { formatNumber } from '../utils/format.js';
 import { infoEmbed } from '../utils/embed.js';
 import { renderInventoryCard } from '../services/visual.service.js';
@@ -13,14 +13,19 @@ export const inventoryCommand: Command = {
   usage: '!inventory',
   async execute({ message, userId }) {
     const items = getInventory(userId);
+    const gems = getGemBalance(userId);
+    const progress = getPlayerProgress(userId);
+    const equipped = getEquippedItems(userId);
+    const equippedText = equipped.length ? equipped.map((item) => `${item.name} (${item.slot})`).join(', ') : 'Belum ada';
+    const summary = infoEmbed('Aset Pemain', `Level ${progress.level} • EXP ${formatNumber(progress.xp)}/${formatNumber(progress.nextLevelXp)}\\nGem: ${formatNumber(gems)}\\nEquipment: ${equippedText}`);
     try {
       const image = await renderInventoryCard(message.author.username, items);
-      await message.reply({ files: [new AttachmentBuilder(image, { name: 'inventory.png' })] });
+      await message.reply({ files: [new AttachmentBuilder(image, { name: 'inventory.png' })], embeds: [summary] });
     } catch {
       const lines = items.length
         ? items.map((item) => `**${item.name}** — ${formatNumber(item.quantity)}`)
         : ['Inventory masih kosong.'];
-      await message.reply({ embeds: [infoEmbed(`${config.emoji.seed} Inventory`, lines.join('\n'))] });
+      await message.reply({ embeds: [summary, infoEmbed(`${config.emoji.seed} Inventory`, lines.join('\n'))] });
     }
   },
 };
