@@ -61,6 +61,9 @@ export function createTradeOffer(
   validateQuantity(giveQuantity);
   validateQuantity(wantQuantity);
   return db.transaction(() => {
+    expireOffers(timestamp);
+    const pendingCount = db.prepare("SELECT COUNT(*) AS count FROM trade_offers WHERE proposer_id = ? AND status = 'PENDING'").get(proposerId) as { count: number };
+    if (pendingCount.count >= 5) throw new Error('TRADE_LIMIT');
     if (!db.prepare('SELECT 1 FROM users WHERE id = ?').get(targetId)) throw new Error('FRIEND_USER_NOT_FOUND');
     if (!db.prepare('SELECT 1 FROM items WHERE id = ?').get(giveItemId)) throw new Error('ITEM_NOT_FOUND');
     if (!db.prepare('SELECT 1 FROM items WHERE id = ?').get(wantItemId)) throw new Error('ITEM_NOT_FOUND');
