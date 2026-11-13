@@ -5,6 +5,19 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'FAMILY_INVALID_NAME': return 'Nama keluarga harus 3–24 karakter dan hanya memakai huruf, angka, spasi, _ atau -.';
+    case 'FAMILY_ALREADY_MEMBER': return 'Lo sudah menjadi anggota keluarga. Satu pemain hanya bisa bergabung dengan satu keluarga.';
+    case 'FAMILY_SELF_INVITE': return 'Lo nggak bisa mengundang diri sendiri.';
+    case 'FAMILY_OWNER_ONLY': return 'Hanya pemimpin keluarga yang bisa melakukan itu.';
+    case 'FAMILY_FULL': return 'Keluarga sudah mencapai batas 8 anggota.';
+    case 'FAMILY_INVITE_PENDING': return 'Undangan ke pemain itu sudah menunggu jawaban.';
+    case 'FAMILY_INVITE_NOT_FOUND': return 'Undangan keluarga tidak ditemukan.';
+    case 'FAMILY_TARGET_NOT_MEMBER': return 'Pemain tersebut bukan anggota keluarga lo.';
+    case 'FAMILY_CANNOT_KICK_SELF': return 'Pemimpin tidak bisa mengeluarkan dirinya sendiri. Pindahkan kepemimpinan terlebih dahulu.';
+    case 'FAMILY_NOT_FOUND': return 'Lo belum tergabung dalam keluarga.';
+    case 'FAMILY_TRANSFER_FIRST': return 'Pindahkan kepemimpinan ke anggota lain sebelum keluar.';
+    case 'FAMILY_ID_INVALID': return 'ID keluarga harus berupa angka positif.';
+    case 'FAMILY_POINTS_LIMIT': return 'Poin keluarga mencapai batas aman sistem.';
     case 'MARRIAGE_SELF': return 'Lo nggak bisa mengajukan pasangan untuk diri sendiri.';
     case 'MARRIAGE_ALREADY_MARRIED': return 'Salah satu pemain sudah punya pasangan game.';
     case 'MARRIAGE_PROPOSAL_RECEIVED': return 'Pemain itu sudah mengirim proposal ke lo. Gunakan !nikah accept @pemain.';
