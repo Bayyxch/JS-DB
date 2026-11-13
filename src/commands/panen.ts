@@ -27,7 +27,7 @@ export const panenCommand: Command = {
         });
         const eventEmbed = result.event.kind === 'negative'
           ? warningEmbed(`${config.emoji.warning} Panen selesai dengan kendala`, `Event: **${result.event.name}** • Event dunia: **${result.worldEventName}**\nEXP: +${formatNumber(result.xpAwarded)} • Level ${result.level}${result.levelsGained ? ` (naik ${result.levelsGained} level!)` : ''}${result.rareDrop ? '\nRARE DROP: Ultimate Palm x1' : ''}`)
-          : successEmbed(`${config.emoji.palm} Panen berhasil`, `Event: **${result.event.name}** • Event dunia: **${result.worldEventName}**`);
+          : successEmbed(`${config.emoji.palm} Panen berhasil`, `Event: **${result.event.name}** • Event dunia: **${result.worldEventName}**\nEXP: +${formatNumber(result.xpAwarded)} • Level ${result.level}${result.levelsGained ? ` (naik ${result.levelsGained} level!)` : ''}${result.rareDrop ? '\nRARE DROP: Ultimate Palm x1' : ''}`);
         await message.reply({ files: [new AttachmentBuilder(image, { name: 'hasil-panen.png' })], embeds: [eventEmbed] });
       } catch {
         const details = result.details.map((row) => `Plot #${row.plot}: ${row.cropName} +${formatNumber(row.yield)} ${row.itemName}`).join('\n');
