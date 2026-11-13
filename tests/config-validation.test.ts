@@ -6,7 +6,7 @@ const validConfig: EconomyConfigForValidation = {
   startingSeeds: 8,
   startingPlots: 4,
   basicSeedPrice: 300,
-  basicGrowMinutes: 240,
+  basicGrowSeconds: 30,
   basicMinYield: 6,
   basicMaxYield: 8,
   tbsSellPrice: 70,
