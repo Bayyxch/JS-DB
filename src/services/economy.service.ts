@@ -274,6 +274,13 @@ export function harvest(userId: string): {
       recordCollection.run(userId, cropId, count, timestamp, timestamp);
     }
 
+    const family = db.prepare('SELECT family_id FROM family_members WHERE user_id = ?').get(userId) as { family_id: number } | undefined;
+    if (family) {
+      const pointsUpdated = db.prepare('UPDATE family_groups SET points = points + ? WHERE id = ? AND points <= ?')
+        .run(ready.length, family.family_id, Number.MAX_SAFE_INTEGER - ready.length);
+      if (pointsUpdated.changes !== 1) throw new Error('FAMILY_POINTS_LIMIT');
+    }
+
     for (const item of totals.values()) {
       changeInventory(db, userId, item.itemId, item.quantity);
     }
