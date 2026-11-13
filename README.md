@@ -251,3 +251,18 @@ Dibuat untuk mengembangkan pengalaman farming, economy, dan social yang bisa dim
 - Palm growth defaults to 10 minutes and is capped at 30 minutes for Discord-friendly sessions.
 - Use `!help` for the interactive command categories or `!help <command>` for a focused guide.
 - Canvas cards are used for player-facing screens such as profile, farm, harvest, inventory, shop, and leaderboard, with embed fallbacks.
+
+
+## Progression and player economy
+
+- Player levels and EXP are global across servers. Harvesting and adventure award EXP.
+- Gold Glove grants +10% EXP while equipped. Use `!equip gold_glove`.
+- The shop is divided into Seeds, Items, and Equipment categories.
+- Growth Booster shortens the remaining growth time by 10 seconds for planted plots: `!use growth_boost`.
+- Lucky Fertilizer is consumed automatically on the next harvest and improves the chance of a rare drop.
+- Harvests have a chance to award Ultimate Palm. Sell it with `!sell ultimate_palm <jumlah>` for Gems.
+- Gems are a secondary currency and can be traded with `!trade`.
+- Adventure locations are selected from the interactive dropdown menu.
+- Palm growth defaults to 30 seconds and is capped at 60 seconds via `BASIC_GROW_SECONDS`.
+
+Set `OWNER_ID` in `.env` to enable owner-only `!admin` actions (ban/unban, add/remove SawitCoin, Gems, and items). Admin actions are written to the audit log.
