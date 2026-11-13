@@ -76,7 +76,7 @@ export const migrations: Migration[] = [
           ('tbs', 'Tandan Buah Segar', 'RESOURCE', 0, ${config.economy.tbsSellPrice}, 'Hasil panen sawit yang bisa dijual.');
         INSERT OR IGNORE INTO crops (id, name, seed_item_id, grow_seconds, min_yield, max_yield, sell_item_id)
         VALUES
-          ('basic', 'Sawit Basic', 'seed_basic', ${config.economy.basicGrowMinutes * 60}, ${config.economy.basicMinYield}, ${config.economy.basicMaxYield}, 'tbs');
+          ('basic', 'Sawit Basic', 'seed_basic', ${config.economy.basicGrowSeconds}, ${config.economy.basicMinYield}, ${config.economy.basicMaxYield}, 'tbs');
       `);
     },
   },
@@ -412,7 +412,7 @@ const palmOnlyMigration: Migration =   {
       `);
 
       db.prepare('UPDATE crops SET grow_seconds = ? WHERE id = ?')
-        .run(config.economy.basicGrowMinutes * 60, 'basic');
+        .run(config.economy.basicGrowSeconds, 'basic');
     },
 };
 
