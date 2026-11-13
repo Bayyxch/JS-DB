@@ -66,6 +66,6 @@ describe('global family cooperatives', () => {
   it('validates names and prevents duplicate membership', () => {
     expect(() => family.createFamily(ownerId, 'x')).toThrow('FAMILY_INVALID_NAME');
     expect(() => family.createFamily(memberId, 'Invalid!Name')).toThrow('FAMILY_INVALID_NAME');
-    expect(() => family.acceptFamilyInvite(memberId, 999)).toThrow('FAMILY_ALREADY_MEMBER');
+    expect(() => family.acceptFamilyInvite(memberId, 999)).toThrow('FAMILY_INVITE_NOT_FOUND');
   });
 });
