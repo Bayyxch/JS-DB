@@ -111,7 +111,7 @@ client.on('interactionCreate', async (interaction) => {
     }
   } catch (error) {
     logger.error('Component interaction failed', error);
-    if (!interaction.replied && !interaction.deferred) {
+    if (interaction.isRepliable() && !interaction.replied && !interaction.deferred) {
       await interaction.reply({ content: 'Menu gagal dimuat. Coba jalankan command lagi.', ephemeral: true }).catch(() => undefined);
     }
   }
