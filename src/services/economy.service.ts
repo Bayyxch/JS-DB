@@ -42,6 +42,25 @@ export interface CropCollectionEntry {
   discovered: number;
 }
 
+export interface MarketPrice {
+  item_id: string;
+  item_name: string;
+  base_price: number;
+  current_price: number;
+  previous_price: number;
+  floor_price: number;
+  target_daily_volume: number;
+  daily_volume: number;
+  day_key: string;
+  updated_at: number;
+}
+
+export interface MarketHistoryEntry {
+  price: number;
+  daily_volume: number;
+  recorded_at: number;
+}
+
 export interface HarvestDetail {
   plot: number;
   cropName: string;
@@ -175,17 +194,94 @@ export function buyItem(userId: string, itemId: string, quantity: number): { ite
   })();
 }
 
-export function sellItem(userId: string, itemId: string, quantity: number): { item: ItemRow; total: number; balance: number } {
+function marketDayKey(timestamp: number): string {
+  return new Date(timestamp).toISOString().slice(0, 10);
+}
+
+function refreshMarketPrice(itemId: string, timestamp: number): MarketPrice | undefined {
+  const row = db.prepare(`
+    SELECT mp.*, i.name AS item_name
+    FROM market_prices mp JOIN items i ON i.id = mp.item_id
+    WHERE mp.item_id = ?
+  `).get(itemId) as MarketPrice | undefined;
+  if (!row) return undefined;
+  const dayKey = marketDayKey(timestamp);
+  if (row.day_key !== dayKey) {
+    db.prepare(`
+      UPDATE market_prices
+      SET previous_price = current_price, current_price = base_price,
+          daily_volume = 0, day_key = ?, updated_at = ?
+      WHERE item_id = ?
+    `).run(dayKey, timestamp, itemId);
+    db.prepare('INSERT INTO market_price_history (item_id, price, daily_volume, recorded_at) VALUES (?, ?, 0, ?)')
+      .run(itemId, row.base_price, timestamp);
+  }
+  return db.prepare(`
+    SELECT mp.*, i.name AS item_name
+    FROM market_prices mp JOIN items i ON i.id = mp.item_id
+    WHERE mp.item_id = ?
+  `).get(itemId) as MarketPrice;
+}
+
+export function sellItem(userId: string, itemId: string, quantity: number): {
+  item: ItemRow;
+  total: number;
+  balance: number;
+  unitPrice: number;
+  nextMarketPrice: number;
+} {
   if (!Number.isSafeInteger(quantity) || quantity <= 0 || quantity > 1_000_000_000) throw new Error('INVALID_QUANTITY');
   return db.transaction(() => {
     const item = db.prepare('SELECT * FROM items WHERE id = ? AND sell_price > 0').get(itemId) as ItemRow | undefined;
     if (!item) throw new Error('ITEM_NOT_SELLABLE');
+    const timestamp = now();
+    const market = refreshMarketPrice(itemId, timestamp);
+    const unitPrice = market?.current_price ?? item.sell_price;
     changeInventory(db, userId, item.id, -quantity);
-    const total = item.sell_price * quantity;
+    const total = unitPrice * quantity;
     if (!Number.isSafeInteger(total)) throw new Error('INVALID_AMOUNT');
-    const balance = changeBalance(db, userId, total, 'ITEM_SALE', { itemId, quantity, unitPrice: item.sell_price });
-    return { item, total, balance };
+    const balance = changeBalance(db, userId, total, 'ITEM_SALE', { itemId, quantity, unitPrice, marketDay: market?.day_key ?? null });
+
+    let nextMarketPrice = unitPrice;
+    if (market) {
+      const nextVolume = market.daily_volume + quantity;
+      if (!Number.isSafeInteger(nextVolume)) throw new Error('MARKET_VOLUME_LIMIT');
+      const pressure = Math.min(0.4, (nextVolume / market.target_daily_volume) * 0.4);
+      nextMarketPrice = Math.max(market.floor_price, Math.min(market.base_price, Math.round(market.base_price * (1 - pressure))));
+      db.prepare(`
+        UPDATE market_prices
+        SET previous_price = current_price, current_price = ?, daily_volume = ?, updated_at = ?
+        WHERE item_id = ?
+      `).run(nextMarketPrice, nextVolume, timestamp, itemId);
+      if (nextMarketPrice !== unitPrice) {
+        db.prepare('INSERT INTO market_price_history (item_id, price, daily_volume, recorded_at) VALUES (?, ?, ?, ?)')
+          .run(itemId, nextMarketPrice, nextVolume, timestamp);
+      }
+    }
+    return { item, total, balance, unitPrice, nextMarketPrice };
   })();
+}
+
+export function getMarketPrices(): MarketPrice[] {
+  return db.transaction(() => {
+    const timestamp = now();
+    const ids = db.prepare('SELECT item_id FROM market_prices').all() as Array<{ item_id: string }>;
+    for (const row of ids) refreshMarketPrice(row.item_id, timestamp);
+    return db.prepare(`
+      SELECT mp.*, i.name AS item_name
+      FROM market_prices mp JOIN items i ON i.id = mp.item_id
+      ORDER BY mp.item_id ASC
+    `).all() as MarketPrice[];
+  })();
+}
+
+export function getMarketHistory(itemId: string, limit = 5): MarketHistoryEntry[] {
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 20) throw new Error('INVALID_LIMIT');
+  return db.prepare(`
+    SELECT price, daily_volume, recorded_at
+    FROM market_price_history WHERE item_id = ?
+    ORDER BY recorded_at DESC, id DESC LIMIT ?
+  `).all(itemId, limit) as MarketHistoryEntry[];
 }
 
 export function getFarmPlots(userId: string): FarmPlotRow[] {

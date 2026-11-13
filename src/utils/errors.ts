@@ -5,6 +5,16 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'TRADE_LIMIT': return 'Lo sudah punya 5 penawaran trade aktif. Selesaikan atau batalkan dulu.';
+    case 'TRADE_TARGET_INVALID': return 'Pilih pemain sungguhan, bukan bot, sebagai tujuan trade.';
+    case 'TRADE_SELF': return 'Lo nggak bisa membuat penawaran ke diri sendiri.';
+    case 'TRADE_SAME_ITEM': return 'Pilih dua jenis item yang berbeda untuk ditukar.';
+    case 'TRADE_ID_INVALID': return 'ID penawaran trade tidak valid.';
+    case 'TRADE_NOT_FOUND': return 'Penawaran tidak ditemukan, sudah selesai, atau kedaluwarsa.';
+    case 'TRADE_NOT_YOURS': return 'Penawaran ini bukan untuk atau milik akun lo.';
+    case 'TRADE_TARGET_REQUIRED': return 'Tandai pemain tujuan. Contoh: !trade offer @pemain tbs 20 corn 5.';
+    case 'TRADE_FORMAT_INVALID': return 'Format: !trade offer @pemain item jumlah item jumlah.';
+    case 'MARKET_VOLUME_LIMIT': return 'Volume perdagangan melewati batas aman sistem.';
     case 'COMPANY_NAME_TAKEN': return 'Nama koperasi itu sudah digunakan.';
     case 'COMPANY_NAME_INVALID': return 'Nama koperasi harus 3–24 karakter dan hanya boleh berisi huruf, angka, spasi, garis bawah, atau tanda hubung.';
     case 'COMPANY_ALREADY_MEMBER': return 'Lo sudah menjadi anggota koperasi lain.';
@@ -24,7 +34,6 @@ export function friendlyError(error: unknown): string {
     case 'MARRIAGE_PROPOSAL_RECEIVED': return 'Pemain itu sudah mengirim proposal ke lo. Gunakan !nikah accept @pemain.';
     case 'MARRIAGE_PROPOSAL_PENDING': return 'Proposal ke pemain itu masih menunggu jawaban.';
     case 'MARRIAGE_PROPOSAL_NOT_FOUND': return 'Proposal pasangan tidak ditemukan.';
-    case 'MARRIAGE_PROPOSAL_PENDING': return 'Proposal pasangan ke pemain itu masih menunggu jawaban.';
     case 'MARRIAGE_NOT_FOUND': return 'Lo belum punya pasangan game.';
     case 'BOND_LIMIT': return 'Poin bond sudah mencapai batas aman sistem.';
     case 'BIO_TOO_LONG': return 'Bio maksimal 160 karakter.';

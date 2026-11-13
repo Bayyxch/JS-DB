@@ -209,4 +209,72 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 6,
+    name: 'global_dynamic_market',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS market_prices (
+          item_id TEXT PRIMARY KEY REFERENCES items(id) ON DELETE CASCADE,
+          base_price INTEGER NOT NULL CHECK (base_price > 0),
+          current_price INTEGER NOT NULL CHECK (current_price > 0),
+          previous_price INTEGER NOT NULL CHECK (previous_price > 0),
+          floor_price INTEGER NOT NULL CHECK (floor_price > 0),
+          ceiling_price INTEGER NOT NULL CHECK (ceiling_price >= floor_price),
+          target_daily_volume INTEGER NOT NULL CHECK (target_daily_volume > 0),
+          daily_volume INTEGER NOT NULL DEFAULT 0 CHECK (daily_volume >= 0),
+          day_key TEXT NOT NULL,
+          updated_at INTEGER NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS market_price_history (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          item_id TEXT NOT NULL REFERENCES items(id) ON DELETE CASCADE,
+          price INTEGER NOT NULL CHECK (price > 0),
+          daily_volume INTEGER NOT NULL CHECK (daily_volume >= 0),
+          recorded_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_market_history_item_time
+          ON market_price_history(item_id, recorded_at DESC);
+        INSERT OR IGNORE INTO market_prices
+          (item_id, base_price, current_price, previous_price, floor_price, ceiling_price, target_daily_volume, daily_volume, day_key, updated_at)
+        SELECT id, sell_price, sell_price, sell_price,
+          MAX(1, CAST(sell_price * 0.60 AS INTEGER)), sell_price,
+          CASE id
+            WHEN 'tbs' THEN 5000
+            WHEN 'corn' THEN 2500
+            WHEN 'rice' THEN 3000
+            WHEN 'cocoa' THEN 1500
+            ELSE 2000
+          END,
+          0, strftime('%Y-%m-%d', 'now'), CAST(strftime('%s', 'now') AS INTEGER) * 1000
+        FROM items WHERE sell_price > 0;
+      `);
+    },
+  },
+  {
+    version: 7,
+    name: 'global_player_trade_offers',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS trade_offers (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          proposer_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          target_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          give_item_id TEXT NOT NULL REFERENCES items(id),
+          give_quantity INTEGER NOT NULL CHECK (give_quantity > 0),
+          want_item_id TEXT NOT NULL REFERENCES items(id),
+          want_quantity INTEGER NOT NULL CHECK (want_quantity > 0),
+          status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'COMPLETED', 'CANCELLED', 'EXPIRED')),
+          created_at INTEGER NOT NULL,
+          expires_at INTEGER NOT NULL,
+          CHECK (proposer_id <> target_id),
+          CHECK (give_item_id <> want_item_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_trade_offers_target_status
+          ON trade_offers(target_id, status, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_trade_offers_proposer_status
+          ON trade_offers(proposer_id, status, created_at DESC);
+      `);
+    },
+  },
 ];
