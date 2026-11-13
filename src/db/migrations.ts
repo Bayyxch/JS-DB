@@ -251,4 +251,30 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 7,
+    name: 'global_player_trade_offers',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS trade_offers (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          proposer_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          target_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          give_item_id TEXT NOT NULL REFERENCES items(id),
+          give_quantity INTEGER NOT NULL CHECK (give_quantity > 0),
+          want_item_id TEXT NOT NULL REFERENCES items(id),
+          want_quantity INTEGER NOT NULL CHECK (want_quantity > 0),
+          status TEXT NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'COMPLETED', 'CANCELLED', 'EXPIRED')),
+          created_at INTEGER NOT NULL,
+          expires_at INTEGER NOT NULL,
+          CHECK (proposer_id <> target_id),
+          CHECK (give_item_id <> want_item_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_trade_offers_target_status
+          ON trade_offers(target_id, status, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_trade_offers_proposer_status
+          ON trade_offers(proposer_id, status, created_at DESC);
+      `);
+    },
+  },
 ];
