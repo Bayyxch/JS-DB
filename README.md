@@ -35,7 +35,7 @@ Node.js 24 is intentionally targeted because it is an LTS line in October 2026. 
 - `!work`
 - `!leaderboard`
 - Global player profiles with editable bio
-- Global friendship requests, accept/decline, list, and remove
+- Global friendship requests, accept/decline, list, and remove\n- Global game-partner proposals, acceptance, status, divorce, and shared bond progression
 - Game partner proposals, acceptance, status, divorce, and shared bond progression
 - Per-command cooldowns
 - Atomic economy transactions
@@ -93,7 +93,7 @@ Aliases are also available for common commands, such as `!saldo`, `!farm`, `!inv
 
 ## Global player and social system
 
-Player accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters. Optional game-partner status is global too; both players must accept a proposal flow, and bond points can be claimed once every 24 hours.
+Player accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters. Game-partner status is global too: proposals require acceptance, each player can have one active partner, and the pair shares one bond claim every 24 hours. Optional game-partner status is global too; both players must accept a proposal flow, and bond points can be claimed once every 24 hours.
 
 ## Economy rules
 
