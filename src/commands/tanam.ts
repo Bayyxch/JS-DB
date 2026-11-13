@@ -10,7 +10,7 @@ export const tanamCommand: Command = {
   name: 'tanam',
   aliases: ['plant'],
   description: 'Tanam sawit di lahan kosong.',
-  usage: '!tanam [basic] [jumlah]',
+  usage: '!tanam [basic|corn|rice|cocoa] [jumlah]',
   cooldownMs: 2500,
   async execute({ message, userId, args }) {
     const parsed = parseQuantity(args, 'basic');
