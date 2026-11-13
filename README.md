@@ -42,6 +42,9 @@ Node.js 24 is intentionally targeted because it is an LTS line in October 2026. 
 - Global cooperative companies with invites, member roles, shared harvest progression, and leaderboard
 - Global commodity market with daily supply-based pricing and price history
 - Escrowed player-to-player item trades with 48-hour expiry
+- House upgrades that unlock adventure zones and improve rewards
+- Adoptable pets with active companion bonuses and feeding/level progression
+- Daily rotating global events that affect harvest, adventure, or pet XP
 - Per-command cooldowns
 - Atomic economy transactions
 - Transaction ledger for every balance change
@@ -92,13 +95,32 @@ npm run dev
 !work
 !leaderboard
 !ping
+!profil
+!profil bio Halo, petani sawit!
+!teman add @pemain
+!nikah propose @pemain
+!koleksi
+!koperasi create Sawit Bersatu
+!market
+!market history tbs
+!trade offer @pemain tbs 20 corn 5
+!trade list
+!rumah
+!rumah upgrade
+!pet shop
+!pet adopt cat
+!pet feed 1
+!adventure
+!adventure explore river
+!adventure history
+!event
 ```
 
 Aliases are also available for common commands, such as `!saldo`, `!farm`, `!inv`, `!beli`, `!jual`, `!luas`, `!lb`, and `!harvest`.
 
 ## Global player and social system
 
-Player accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters. Game-partner status is global too: proposals require acceptance, each player can have one active partner, and the pair shares one bond claim every 24 hours. Crop discoveries and lifetime harvested quantities are also stored globally per player. Players can join one global cooperative at a time; member harvests contribute to its shared progress. Cooperatives support owner-managed invites, ownership transfer, member removal, and disbanding. Commodity prices are global and reset to base price daily; aggregate daily sales pressure prices down toward a 60% floor. Player trades reserve the offered item in escrow until acceptance, cancellation, or 48-hour expiry.
+Player accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters. Game-partner status is global too: proposals require acceptance, each player can have one active partner, and the pair shares one bond claim every 24 hours. Crop discoveries and lifetime harvested quantities are also stored globally per player. Players can join one global cooperative at a time; member harvests contribute to its shared progress. Cooperatives support owner-managed invites, ownership transfer, member removal, and disbanding. Commodity prices are global and reset to base price daily; aggregate daily sales pressure prices down toward a 60% floor. Player trades reserve the offered item in escrow until acceptance, cancellation, or 48-hour expiry. Houses, pets, adventures, and events are also global. House upgrades unlock further zones and add adventure bonuses; active pets add another bonus. The same UTC-day world event applies to all players, rotating between harvest, adventure, and pet progression bonuses.
 
 ## Economy rules
 

@@ -29,6 +29,10 @@ import { collectionCommand } from './commands/koleksi.js';
 import { companyCommand } from './commands/koperasi.js';
 import { marketCommand } from './commands/market.js';
 import { tradeCommand } from './commands/trade.js';
+import { houseCommand } from './commands/rumah.js';
+import { petCommand } from './commands/pet.js';
+import { adventureCommand } from './commands/adventure.js';
+import { eventCommand } from './commands/event.js';
 import { createHelpCommand } from './commands/help.js';
 
 runMigrations();
@@ -46,6 +50,10 @@ const baseCommands: Command[] = [
   companyCommand,
   marketCommand,
   tradeCommand,
+  houseCommand,
+  petCommand,
+  adventureCommand,
+  eventCommand,
   balanceCommand,
   kebunCommand,
   statusCommand,
