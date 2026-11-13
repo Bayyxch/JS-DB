@@ -5,6 +5,14 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'EXPEDITION_NO_REWARDS': return 'Belum ada resource yang bisa ditemukan dalam ekspedisi.';
+    case 'HOME_MAX_LEVEL': return 'Rumah lo sudah mencapai level maksimum.';
+    case 'PET_INVALID_NAME': return 'Nama hewan harus 2–16 karakter dan hanya memakai huruf, angka, spasi, _ atau -.';
+    case 'PET_NAME_TAKEN': return 'Lo sudah punya hewan dengan nama tersebut.';
+    case 'PET_SLOTS_FULL': return 'Slot hewan penuh. Upgrade rumah untuk membuka slot tambahan.';
+    case 'PET_NOT_FOUND': return 'Hewan peliharaan tidak ditemukan.';
+    case 'PET_NEEDS_TBS': return 'Butuh minimal 5 TBS untuk memberi makan hewan.';
+    case 'PET_XP_LIMIT': return 'XP hewan sudah mencapai batas aman sistem.';
     case 'MARKET_INVALID_PRICE': return 'Harga per item harus berupa angka bulat positif yang aman.';
     case 'MARKET_LISTING_NOT_FOUND': return 'Listing pasar tidak ditemukan.';
     case 'MARKET_LISTING_EXPIRED': return 'Listing ini sudah kedaluwarsa. Minta penjual membatalkannya agar item kembali.';
