@@ -3,6 +3,7 @@ import { config } from '../config/env.js';
 import { db } from '../db/database.js';
 import { calculateLandExpansionCost as calculateLandExpansionCostFormula, randomIntInclusive } from '../utils/economy.js';
 import { getCurrentWorldEvent } from './world-event.service.js';
+import { resolveHarvestEvent } from './harvest-event.service.js';
 
 export interface FarmPlotRow {
   plot_index: number;
@@ -331,12 +332,15 @@ export function harvest(userId: string): {
   tbs: number;
   items: HarvestedItem[];
   details: HarvestDetail[];
+  event: ReturnType<typeof resolveHarvestEvent>;
+  worldEventName: string;
 } {
   return db.transaction(() => {
     const plots = getFarmPlots(userId).filter((plot) => plot.crop_id !== null);
     const ready: Array<{ plot: FarmPlotRow; crop: CropRow; yield: number; itemName: string }> = [];
     const timestamp = now();
     const worldEvent = getCurrentWorldEvent(timestamp);
+    const event = resolveHarvestEvent();
 
     for (const plot of plots) {
       const crop = db.prepare('SELECT * FROM crops WHERE id = ?').get(plot.crop_id) as CropRow | undefined;
@@ -345,7 +349,12 @@ export function harvest(userId: string): {
 
       const item = db.prepare('SELECT name FROM items WHERE id = ?').get(crop.sell_item_id) as { name: string } | undefined;
       if (!item) throw new Error('CROP_REWARD_ITEM_NOT_FOUND');
-      ready.push({ plot, crop, yield: Math.max(1, Math.floor(randomYield(crop.min_yield, crop.max_yield) * worldEvent.harvestMultiplier)), itemName: item.name });
+      ready.push({
+        plot,
+        crop,
+        yield: Math.max(1, Math.floor(randomYield(crop.min_yield, crop.max_yield) * worldEvent.harvestMultiplier * event.yieldMultiplier)),
+        itemName: item.name,
+      });
     }
 
     if (ready.length === 0) throw new Error('NOT_READY');
@@ -402,6 +411,8 @@ export function harvest(userId: string): {
       harvested: ready.length,
       tbs: totals.get('tbs')?.quantity ?? 0,
       items,
+      event,
+      worldEventName: worldEvent.name,
       details: ready.map((row) => ({
         plot: row.plot.plot_index,
         cropName: row.crop.name,
