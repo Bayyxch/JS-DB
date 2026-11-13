@@ -32,7 +32,7 @@ export const panenCommand: Command = {
         totals,
         '',
         details,
-      ].join('\\n');
+      ].join('\n');
       const embed = result.event.kind === 'negative'
         ? warningEmbed(`${config.emoji.palm} Panen selesai dengan kendala`, description)
         : successEmbed(`${config.emoji.palm} Panen berhasil`, description);
