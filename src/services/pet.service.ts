@@ -42,6 +42,7 @@ export function adoptPet(ownerId: string, rawName: string): { pet: OwnedPet; cos
     const slots = home.level + 1;
     if (pets.length >= slots) throw new Error('PET_SLOTS_FULL');
 
+    if (db.prepare('SELECT 1 FROM player_pets WHERE owner_id = ? AND name = ? COLLATE NOCASE').get(ownerId, name)) throw new Error('PET_NAME_TAKEN');
     const event = getCurrentEvent();
     const cost = Math.round(5000 * event.petCostMultiplier);
     const roll = randomIntInclusive(1, 100);
@@ -84,6 +85,7 @@ export function feedPet(ownerId: string, petId: number): { pet: OwnedPet; nextFe
 export function renamePet(ownerId: string, petId: number, rawName: string): string {
   if (!Number.isSafeInteger(petId) || petId <= 0) throw new Error('PET_NOT_FOUND');
   const name = validatePetName(rawName);
+  if (db.prepare('SELECT 1 FROM player_pets WHERE owner_id = ? AND name = ? COLLATE NOCASE AND id <> ?').get(ownerId, name, petId)) throw new Error('PET_NAME_TAKEN');
   const result = db.prepare('UPDATE player_pets SET name = ? WHERE id = ? AND owner_id = ?')
     .run(name, petId, ownerId);
   if (result.changes === 0) throw new Error('PET_NOT_FOUND');
