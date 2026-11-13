@@ -44,6 +44,9 @@ export function createCompany(ownerId: string, name: string): CompanyInfo {
     if (db.prepare('SELECT 1 FROM company_members WHERE user_id = ?').get(ownerId)) {
       throw new Error('COMPANY_ALREADY_MEMBER');
     }
+    if (db.prepare('SELECT 1 FROM companies WHERE name = ? COLLATE NOCASE').get(normalized)) {
+      throw new Error('COMPANY_NAME_TAKEN');
+    }
     const result = db.prepare('INSERT INTO companies (name, owner_id, created_at) VALUES (?, ?, ?)')
       .run(normalized, ownerId, Date.now());
     const companyId = Number(result.lastInsertRowid);
