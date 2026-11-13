@@ -34,6 +34,8 @@ Node.js 24 is intentionally targeted because it is an LTS line in October 2026. 
 - `!daily`
 - `!work`
 - `!leaderboard`
+- Global player profiles with editable bio
+- Global friendship requests, accept/decline, list, and remove
 - Per-command cooldowns
 - Atomic economy transactions
 - Transaction ledger for every balance change
@@ -87,6 +89,10 @@ npm run dev
 ```
 
 Aliases are also available for common commands, such as `!saldo`, `!farm`, `!inv`, `!beli`, `!jual`, `!luas`, `!lb`, and `!harvest`.
+
+## Global player and social system
+
+Player accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters.
 
 ## Economy rules
 
