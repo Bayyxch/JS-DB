@@ -25,6 +25,15 @@ function validateQuantity(quantity: number): void {
 }
 
 function adjustInventory(userId: string, itemId: string, delta: number): void {
+  if (itemId === 'currency_sc' || itemId === 'currency_gem') {
+    const column = itemId === 'currency_sc' ? 'balance' : 'gems';
+    const row = db.prepare(`SELECT ${column} AS amount FROM wallets WHERE user_id = ?`).get(userId) as { amount: number } | undefined;
+    if (!row) throw new Error('ACCOUNT_NOT_FOUND');
+    const next = row.amount + delta;
+    if (!Number.isSafeInteger(next) || next < 0) throw new Error(next < 0 ? (column === 'balance' ? 'INSUFFICIENT_FUNDS' : 'INSUFFICIENT_GEMS') : 'BALANCE_LIMIT');
+    db.prepare(`UPDATE wallets SET ${column} = ? WHERE user_id = ?`).run(next, userId);
+    return;
+  }
   const row = db.prepare('SELECT quantity FROM inventory WHERE user_id = ? AND item_id = ?')
     .get(userId, itemId) as { quantity: number } | undefined;
   const next = (row?.quantity ?? 0) + delta;
