@@ -60,13 +60,14 @@ describe('adventure, homes, pets, and global events', () => {
     pets.adoptPet(userId, 'Bubu');
     expect(() => pets.adoptPet(userId, 'Extra')).toThrow('PET_SLOTS_FULL');
 
+    const tbsBeforeFeeding = economy.getInventoryItem(userId, 'tbs');
     db.prepare(`
       INSERT INTO inventory (user_id, item_id, quantity) VALUES (?, 'tbs', 10)
       ON CONFLICT(user_id, item_id) DO UPDATE SET quantity = quantity + 10
     `).run(userId);
     const fed = pets.feedPet(userId, first.pet.id);
     expect(fed.pet.xp).toBe(25);
-    expect(economy.getInventoryItem(userId, 'tbs')).toBe(5);
+    expect(economy.getInventoryItem(userId, 'tbs')).toBe(tbsBeforeFeeding + 5);
     expect(() => pets.feedPet(userId, first.pet.id)).toThrow('COOLDOWN');
     expect(pets.renamePet(userId, first.pet.id, 'Kiko Jr')).toBe('Kiko Jr');
   });
