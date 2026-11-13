@@ -34,6 +34,14 @@ export interface HarvestedItem {
   quantity: number;
 }
 
+export interface CropCollectionEntry {
+  crop_id: string;
+  crop_name: string;
+  total_harvested: number;
+  first_harvested_at: number | null;
+  discovered: number;
+}
+
 export interface HarvestDetail {
   plot: number;
   cropName: string;
@@ -263,6 +271,20 @@ export function harvest(userId: string): {
       changeInventory(db, userId, item.itemId, item.quantity);
     }
 
+    const cropTotals = new Map<string, number>();
+    for (const row of ready) {
+      cropTotals.set(row.crop.id, (cropTotals.get(row.crop.id) ?? 0) + row.yield);
+    }
+    const recordDiscovery = db.prepare(`
+      INSERT INTO crop_discoveries (user_id, crop_id, first_harvested_at, total_harvested)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(user_id, crop_id) DO UPDATE
+      SET total_harvested = total_harvested + excluded.total_harvested
+    `);
+    for (const [cropId, quantity] of cropTotals) {
+      recordDiscovery.run(userId, cropId, timestamp, quantity);
+    }
+
     const items = [...totals.values()];
     return {
       harvested: ready.length,
@@ -348,4 +370,17 @@ export function getLeaderboard(limit = 10): Array<{ id: string; username: string
     ORDER BY w.balance DESC, u.created_at ASC
     LIMIT ?
   `).all(limit) as Array<{ id: string; username: string; balance: number }>;
+}
+
+
+export function getCropCollection(userId: string): CropCollectionEntry[] {
+  return db.prepare(`
+    SELECT c.id AS crop_id, c.name AS crop_name,
+      COALESCE(d.total_harvested, 0) AS total_harvested,
+      d.first_harvested_at,
+      CASE WHEN d.user_id IS NULL THEN 0 ELSE 1 END AS discovered
+    FROM crops c
+    LEFT JOIN crop_discoveries d ON d.crop_id = c.id AND d.user_id = ?
+    ORDER BY c.id ASC
+  `).all(userId) as CropCollectionEntry[];
 }

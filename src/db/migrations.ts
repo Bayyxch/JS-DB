@@ -147,4 +147,33 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 4,
+    name: 'diverse_crops_and_global_collection',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS crop_discoveries (
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          crop_id TEXT NOT NULL REFERENCES crops(id) ON DELETE CASCADE,
+          first_harvested_at INTEGER NOT NULL,
+          total_harvested INTEGER NOT NULL DEFAULT 0 CHECK (total_harvested >= 0),
+          PRIMARY KEY (user_id, crop_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_crop_discoveries_user ON crop_discoveries(user_id);
+        INSERT OR IGNORE INTO items (id, name, type, buy_price, sell_price, description)
+        VALUES
+          ('seed_corn', 'Bibit Jagung', 'SEED', 180, 0, 'Bibit jagung untuk diversifikasi kebun.'),
+          ('corn', 'Jagung Pipil', 'RESOURCE', 0, 42, 'Hasil panen jagung.'),
+          ('seed_rice', 'Bibit Padi', 'SEED', 220, 0, 'Bibit padi untuk lahan pertanian.'),
+          ('rice', 'Gabah', 'RESOURCE', 0, 48, 'Hasil panen padi.'),
+          ('seed_cocoa', 'Bibit Kakao', 'SEED', 450, 0, 'Bibit kakao dengan masa tumbuh lebih lama.'),
+          ('cocoa', 'Buah Kakao', 'RESOURCE', 0, 105, 'Hasil panen buah kakao.');
+        INSERT OR IGNORE INTO crops (id, name, seed_item_id, grow_seconds, min_yield, max_yield, sell_item_id)
+        VALUES
+          ('corn', 'Jagung', 'seed_corn', 7200, 5, 9, 'corn'),
+          ('rice', 'Padi', 'seed_rice', 10800, 7, 12, 'rice'),
+          ('cocoa', 'Kakao', 'seed_cocoa', 28800, 4, 7, 'cocoa');
+      `);
+    },
+  },
 ];

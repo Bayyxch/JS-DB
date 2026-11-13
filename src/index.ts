@@ -25,6 +25,7 @@ import { pingCommand } from './commands/ping.js';
 import { profileCommand } from './commands/profil.js';
 import { friendCommand } from './commands/teman.js';
 import { marriageCommand } from './commands/nikah.js';
+import { collectionCommand } from './commands/koleksi.js';
 import { createHelpCommand } from './commands/help.js';
 
 runMigrations();
@@ -38,6 +39,7 @@ const baseCommands: Command[] = [
   profileCommand,
   friendCommand,
   marriageCommand,
+  collectionCommand,
   balanceCommand,
   kebunCommand,
   statusCommand,
