@@ -149,8 +149,8 @@ export function acceptMarriageProposal(targetId: string, proposerId: string): vo
     const [low, high] = [targetId, proposerId].sort();
     db.prepare('INSERT INTO marriages (user_low, user_high, married_at) VALUES (?, ?, ?)')
       .run(low, high, Date.now());
-    db.prepare('DELETE FROM marriage_proposals WHERE (proposer_id = ? AND target_id = ?) OR (proposer_id = ? AND target_id = ?)')
-      .run(proposerId, targetId, targetId, proposerId);
+    db.prepare('DELETE FROM marriage_proposals WHERE proposer_id IN (?, ?) OR target_id IN (?, ?)')
+      .run(proposerId, targetId, proposerId, targetId);
   })();
 }
 
