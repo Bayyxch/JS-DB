@@ -33,7 +33,6 @@ export const adventureCommand: Command = {
           : `Terkunci • Butuh rumah level ${zone.min_house_level}`,
         value: zone.id,
         default: false,
-        ...(zone.unlocked ? {} : { emoji: '🔒' }),
       })))
       .setMinValues(1)
       .setMaxValues(1);
