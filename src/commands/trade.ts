@@ -59,7 +59,8 @@ export const tradeCommand: Command = {
     }
 
     await message.reply({ embeds: [infoEmbed('Cara pakai Trade', [
-      '`!trade offer @pemain tbs 20 sc 500`\n      '`!trade offer @pemain gem 2 gold_glove 1`'',
+      '`!trade offer @pemain tbs 20 sc 500`',
+      '`!trade offer @pemain gem 2 gold_glove 1`',
       '`!trade list`',
       '`!trade accept <id>`',
       '`!trade cancel <id>`',
