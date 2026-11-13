@@ -1,8 +1,8 @@
-import { EmbedBuilder } from 'discord.js';
+import { AttachmentBuilder, EmbedBuilder } from 'discord.js';
 import type { Command } from '../types/command.js';
 import { getPlayerProfile, setPlayerBio } from '../services/social.service.js';
 import { infoEmbed } from '../utils/embed.js';
-import { formatNumber } from '../utils/format.js';
+import { renderProfileCard } from '../services/visual.service.js';
 
 export const profileCommand: Command = {
   name: 'profil',
@@ -23,20 +23,24 @@ export const profileCommand: Command = {
       return;
     }
 
-    const description = [
-      profile.bio || 'Belum ada bio.',
-      '',
-      `SawitCoin: **${formatNumber(profile.balance)}**`,
-      `Teman: **${profile.friend_count}**`,
-      `Lahan: **${profile.planted_plots}/${profile.farm_plots}** plot terisi`,
-      `Bergabung: <t:${Math.floor(profile.created_at / 1000)}:D>`,
-    ].join('\n');
-    const embed = new EmbedBuilder()
-      .setColor(0x3f6f44)
-      .setTitle(`Profil ${profile.username}`)
-      .setThumbnail(target.displayAvatarURL())
-      .setDescription(description)
-      .setFooter({ text: `Global Player ID: ${profile.id}` });
-    await message.reply({ embeds: [embed] });
+    try {
+      const image = await renderProfileCard(
+        profile,
+        target.displayAvatarURL({ extension: 'png', size: 256 }),
+      );
+      const attachment = new AttachmentBuilder(image, { name: 'profile.png' });
+      await message.reply({ files: [attachment] });
+    } catch {
+      const fallback = new EmbedBuilder()
+        .setColor(0x3f6f44)
+        .setTitle(`Profil ${profile.username}`)
+        .setDescription(profile.bio || 'Belum ada bio.')
+        .addFields(
+          { name: 'SawitCoin', value: String(profile.balance), inline: true },
+          { name: 'Teman', value: String(profile.friend_count), inline: true },
+          { name: 'Lahan', value: `${profile.planted_plots}/${profile.farm_plots}`, inline: true },
+        );
+      await message.reply({ embeds: [fallback] });
+    }
   },
 };
