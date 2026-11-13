@@ -67,4 +67,12 @@ describe('global escrowed player trades', () => {
     expect(() => trades.createTradeOffer(proposer, proposer, 'seed_basic', 1, 'tbs', 1)).toThrow('TRADE_SELF');
     expect(() => trades.createTradeOffer(proposer, target, 'tbs', 1, 'tbs', 2)).toThrow('TRADE_SAME_ITEM');
   });
+  
+  it('limits each player to five active outgoing offers', () => {
+    const ids = Array.from({ length: 5 }, () =>
+      trades.createTradeOffer(proposer, target, 'seed_basic', 1, 'corn', 1),
+    );
+    expect(() => trades.createTradeOffer(proposer, target, 'seed_basic', 1, 'rice', 1)).toThrow('TRADE_LIMIT');
+    for (const id of ids) trades.cancelTradeOffer(proposer, id);
+  });
 });
