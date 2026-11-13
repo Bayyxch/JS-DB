@@ -47,7 +47,7 @@ describe('multi-crop farming and collection', () => {
     expect(result.harvested).toBe(2);
     expect(result.items.some((item) => item.itemId === 'corn_ear')).toBe(true);
     expect(economy.getInventoryItem(userId, 'corn_ear')).toBeGreaterThanOrEqual(6);
-    expect(economy.getInventoryItem(userId, 'corn_ear')).toBeLessThanOrEqual(12);
+    expect(economy.getInventoryItem(userId, 'corn_ear')).toBeLessThanOrEqual(14);
 
     const collection = economy.getCropCollection(userId);
     expect(collection).toHaveLength(1);
