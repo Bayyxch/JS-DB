@@ -38,6 +38,8 @@ import { handleAdventureSelectInteraction } from './commands/adventure.js';
 import { handleShopInteraction } from './commands/shop.js';
 import { adminCommand } from './commands/admin.js';
 import { levelCommand } from './commands/level.js';
+import { useCommand } from './commands/use.js';
+import { equipCommand } from './commands/equip.js';
 import { isUserBanned } from './services/admin.service.js';
 
 runMigrations();
@@ -61,6 +63,8 @@ const baseCommands: Command[] = [
   eventCommand,
   adminCommand,
   levelCommand,
+  useCommand,
+  equipCommand,
   balanceCommand,
   kebunCommand,
   statusCommand,
