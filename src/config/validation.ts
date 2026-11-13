@@ -3,7 +3,7 @@ export interface EconomyConfigForValidation {
   startingSeeds: number;
   startingPlots: number;
   basicSeedPrice: number;
-  basicGrowMinutes: number;
+  basicGrowSeconds: number;
   basicMinYield: number;
   basicMaxYield: number;
   tbsSellPrice: number;
@@ -29,7 +29,7 @@ export function validateEconomyConfig(economy: EconomyConfigForValidation): void
     ['STARTING_SEEDS', economy.startingSeeds, 0],
     ['STARTING_PLOTS', economy.startingPlots, 1],
     ['BASIC_SEED_PRICE', economy.basicSeedPrice, 1],
-    ['BASIC_GROW_MINUTES', economy.basicGrowMinutes, 1],
+    ['BASIC_GROW_SECONDS', economy.basicGrowSeconds, 1],
     ['BASIC_MIN_YIELD', economy.basicMinYield, 1],
     ['BASIC_MAX_YIELD', economy.basicMaxYield, 1],
     ['TBS_SELL_PRICE', economy.tbsSellPrice, 0],
