@@ -5,6 +5,12 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'MARKET_INVALID_PRICE': return 'Harga per item harus berupa angka bulat positif yang aman.';
+    case 'MARKET_LISTING_NOT_FOUND': return 'Listing pasar tidak ditemukan.';
+    case 'MARKET_LISTING_EXPIRED': return 'Listing ini sudah kedaluwarsa. Minta penjual membatalkannya agar item kembali.';
+    case 'MARKET_SELF_PURCHASE': return 'Lo nggak bisa membeli listing milik sendiri.';
+    case 'MARKET_NOT_ENOUGH_STOCK': return 'Jumlah yang diminta melebihi stok listing.';
+    case 'MARKET_NOT_OWNER': return 'Hanya pemilik listing yang bisa membatalkannya.';
     case 'FAMILY_INVALID_NAME': return 'Nama keluarga harus 3–24 karakter dan hanya memakai huruf, angka, spasi, _ atau -.';
     case 'FAMILY_ALREADY_MEMBER': return 'Lo sudah menjadi anggota keluarga. Satu pemain hanya bisa bergabung dengan satu keluarga.';
     case 'FAMILY_SELF_INVITE': return 'Lo nggak bisa mengundang diri sendiri.';
