@@ -568,8 +568,8 @@ export function work(userId: string): { reward: number; balance: number } {
   })();
 }
 
-export function getShop(): ItemRow[] {
-  return db.prepare('SELECT * FROM items WHERE buy_price > 0 ORDER BY buy_price ASC').all() as ItemRow[];
+export function getShop(category = 'SEEDS'): ItemRow[] {
+  return db.prepare('SELECT * FROM items WHERE buy_price > 0 AND category = ? ORDER BY buy_price ASC, id ASC').all(category.toUpperCase()) as ItemRow[];
 }
 
 export function getInventory(userId: string): Array<ItemRow & { quantity: number }> {
