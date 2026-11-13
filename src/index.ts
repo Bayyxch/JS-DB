@@ -28,6 +28,10 @@ import { marriageCommand } from './commands/nikah.js';
 import { collectionCommand } from './commands/koleksi.js';
 import { familyCommand } from './commands/keluarga.js';
 import { marketCommand } from './commands/market.js';
+import { expeditionCommand } from './commands/ekspedisi.js';
+import { homeCommand } from './commands/rumah.js';
+import { petCommand } from './commands/pet.js';
+import { eventCommand } from './commands/event.js';
 import { createHelpCommand } from './commands/help.js';
 
 runMigrations();
@@ -44,6 +48,10 @@ const baseCommands: Command[] = [
   collectionCommand,
   familyCommand,
   marketCommand,
+  expeditionCommand,
+  homeCommand,
+  petCommand,
+  eventCommand,
   balanceCommand,
   kebunCommand,
   statusCommand,
