@@ -35,11 +35,12 @@ afterAll(() => {
 
 describe('global escrowed player trades', () => {
   it('reserves the offered item and transfers both sides only on acceptance', () => {
+    const targetSeedsBefore = economy.getInventoryItem(target, 'seed_basic');
     const offerId = trades.createTradeOffer(proposer, target, 'seed_basic', 2, 'tbs', 5);
     expect(economy.getInventoryItem(proposer, 'seed_basic')).toBe(6);
     expect(() => trades.acceptTradeOffer(stranger, offerId)).toThrow('TRADE_NOT_YOURS');
     trades.acceptTradeOffer(target, offerId);
-    expect(economy.getInventoryItem(target, 'seed_basic')).toBe(2);
+    expect(economy.getInventoryItem(target, 'seed_basic')).toBe(targetSeedsBefore + 2);
     expect(economy.getInventoryItem(target, 'tbs')).toBe(5);
     expect(economy.getInventoryItem(proposer, 'tbs')).toBe(5);
   });
@@ -67,7 +68,7 @@ describe('global escrowed player trades', () => {
     expect(() => trades.createTradeOffer(proposer, proposer, 'seed_basic', 1, 'tbs', 1)).toThrow('TRADE_SELF');
     expect(() => trades.createTradeOffer(proposer, target, 'tbs', 1, 'tbs', 2)).toThrow('TRADE_SAME_ITEM');
   });
-  
+
   it('limits each player to five active outgoing offers', () => {
     const ids = Array.from({ length: 5 }, () =>
       trades.createTradeOffer(proposer, target, 'seed_basic', 1, 'corn', 1),
