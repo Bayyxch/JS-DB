@@ -180,4 +180,37 @@ export const migrations: Migration[] = [
       `);
     },
   },
+  {
+    version: 5,
+    name: 'global_family_cooperatives',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS family_groups (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL COLLATE NOCASE UNIQUE,
+          owner_id TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+          points INTEGER NOT NULL DEFAULT 0 CHECK (points >= 0),
+          created_at INTEGER NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS family_members (
+          user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          family_id INTEGER NOT NULL REFERENCES family_groups(id) ON DELETE CASCADE,
+          role TEXT NOT NULL CHECK (role IN ('owner', 'member')),
+          joined_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_family_members_family
+          ON family_members(family_id, joined_at ASC);
+        CREATE TABLE IF NOT EXISTS family_invites (
+          family_id INTEGER NOT NULL REFERENCES family_groups(id) ON DELETE CASCADE,
+          inviter_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          invitee_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          created_at INTEGER NOT NULL,
+          PRIMARY KEY (family_id, invitee_id),
+          CHECK (inviter_id <> invitee_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_family_invites_invitee
+          ON family_invites(invitee_id, created_at ASC);
+      `);
+    },
+  },
 ];
