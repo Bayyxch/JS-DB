@@ -2,6 +2,7 @@ import type Database from 'better-sqlite3';
 import { config } from '../config/env.js';
 import { db } from '../db/database.js';
 import { calculateLandExpansionCost as calculateLandExpansionCostFormula, randomIntInclusive } from '../utils/economy.js';
+import { getCurrentWorldEvent } from './world-event.service.js';
 
 export interface FarmPlotRow {
   plot_index: number;
@@ -335,6 +336,7 @@ export function harvest(userId: string): {
     const plots = getFarmPlots(userId).filter((plot) => plot.crop_id !== null);
     const ready: Array<{ plot: FarmPlotRow; crop: CropRow; yield: number; itemName: string }> = [];
     const timestamp = now();
+    const worldEvent = getCurrentWorldEvent(timestamp);
 
     for (const plot of plots) {
       const crop = db.prepare('SELECT * FROM crops WHERE id = ?').get(plot.crop_id) as CropRow | undefined;
@@ -343,7 +345,7 @@ export function harvest(userId: string): {
 
       const item = db.prepare('SELECT name FROM items WHERE id = ?').get(crop.sell_item_id) as { name: string } | undefined;
       if (!item) throw new Error('CROP_REWARD_ITEM_NOT_FOUND');
-      ready.push({ plot, crop, yield: randomYield(crop.min_yield, crop.max_yield), itemName: item.name });
+      ready.push({ plot, crop, yield: Math.max(1, Math.floor(randomYield(crop.min_yield, crop.max_yield) * worldEvent.harvestMultiplier)), itemName: item.name });
     }
 
     if (ready.length === 0) throw new Error('NOT_READY');
