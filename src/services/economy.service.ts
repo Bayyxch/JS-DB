@@ -285,6 +285,20 @@ export function harvest(userId: string): {
       recordDiscovery.run(userId, cropId, timestamp, quantity);
     }
 
+    const companyYield = [...cropTotals.values()].reduce((sum, quantity) => sum + quantity, 0);
+    if (!Number.isSafeInteger(companyYield)) throw new Error('COMPANY_PROGRESS_LIMIT');
+    const membership = db.prepare('SELECT company_id FROM company_members WHERE user_id = ?')
+      .get(userId) as { company_id: number } | undefined;
+    if (membership) {
+      const company = db.prepare('SELECT total_harvested FROM companies WHERE id = ?')
+        .get(membership.company_id) as { total_harvested: number } | undefined;
+      if (!company || !Number.isSafeInteger(company.total_harvested + companyYield)) {
+        throw new Error('COMPANY_PROGRESS_LIMIT');
+      }
+      db.prepare('UPDATE companies SET total_harvested = total_harvested + ? WHERE id = ?')
+        .run(companyYield, membership.company_id);
+    }
+
     const items = [...totals.values()];
     return {
       harvested: ready.length,
