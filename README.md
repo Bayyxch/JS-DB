@@ -94,6 +94,38 @@ npm run dev
 !daily
 !work
 !leaderboard
+!profil
+!profil bio Halo, petani sawit!
+!teman add @pemain
+!teman accept @pemain
+!teman list
+!nikah propose @pemain
+!nikah accept @pemain
+!nikah status
+!nikah bond
+!tanam corn 2
+!tanam pineapple 1
+!tanam cacao 1
+!koleksi
+!keluarga create Keluarga Sawit
+!keluarga invite @pemain
+!keluarga invites
+!keluarga accept 1
+!keluarga info
+!market list
+!market sell tbs 10 75
+!market buy 1 2
+!market mine
+!market cancel 1
+!ekspedisi
+!ekspedisi status
+!rumah
+!rumah upgrade
+!pet
+!pet adopt Kiko
+!pet feed 1
+!pet rename 1 Kiko Baru
+!event
 !ping
 ```
 
