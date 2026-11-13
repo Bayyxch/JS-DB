@@ -34,7 +34,18 @@ Node.js 24 is intentionally targeted because it is an LTS line in October 2026. 
 - `!daily`
 - `!work`
 - `!leaderboard`
-- Global player profiles with editable bio\n- Global friendship requests, accept/decline, list, and remove\n- Game partner proposals, acceptance, status, divorce, and shared bond progression\n- Multiple crop types with rarity tiers and separate seed / harvest items\n- Global crop collection that records each player's harvest discoveries\n- Global family cooperatives with invitations, roles, member management, and harvest contribution levels\n- Escrow-backed global player marketplace with partial purchases, seller payouts, and listing cancellation\n- Timed non-combat expeditions with resource rewards and adventure levels\n- Upgradeable player homes that unlock pet slots\n- Adoptable pets with rarity, naming, feeding, and level progression\n- Rotating weekly global events with harvest, expedition, and pet bonuses\n- Per-command cooldowns
+- Global player profiles with editable bio
+- Global friendship requests, accept/decline, list, and remove
+- Game partner proposals, acceptance, status, divorce, and shared bond progression
+- Multiple crop types with rarity tiers and separate seed / harvest items
+- Global crop collection that records each player's harvest discoveries
+- Global family cooperatives with invitations, roles, member management, and harvest contribution levels
+- Escrow-backed global player marketplace with partial purchases, seller payouts, and listing cancellation
+- Timed non-combat expeditions with resource rewards and adventure levels
+- Upgradeable player homes that unlock pet slots
+- Adoptable pets with rarity, naming, feeding, and level progression
+- Rotating weekly global events with harvest, expedition, and pet bonuses
+- Per-command cooldowns
 - Atomic economy transactions
 - Transaction ledger for every balance change
 - SQLite WAL mode and foreign keys
@@ -88,7 +99,27 @@ npm run dev
 
 Aliases are also available for common commands, such as `!saldo`, `!farm`, `!inv`, `!beli`, `!jual`, `!luas`, `!lb`, and `!harvest`.
 
-## Global player and social system\n\nPlayer accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters. Optional game-partner status is global too; both players must accept a proposal flow, and bond points can be claimed once every 24 hours.\n\n## Adventure, homes, pets, and events\n\n`!ekspedisi` starts a two-hour-cooldown exploration run that awards a random sellable resource and adventure XP. `!rumah` shows the player's home; upgrades cost SawitCoin and increase pet capacity. Players can adopt pets, rename them, and feed them five TBS once per hour to gain pet XP. A shared weekly event rotates automatically across all servers and can boost harvests, expeditions, or reduce adoption cost.\n\n## Global player marketplace\n\nPlayers can create listings from inventory, browse active offers, buy partial quantities, and cancel their own listings. Listed items are held in escrow so they cannot be sold twice. Purchases transfer SawitCoin directly from buyer to seller and write ledger entries for both sides. Listings expire after seven days; expired listings can still be cancelled by the seller to reclaim the remaining escrowed items.\n\n## Family cooperatives\n\nA player can belong to one global family with up to eight members. Owners can invite players, transfer leadership, or remove members. Invitations require acceptance. Harvesting crops contributes one family point per harvested plot, building a shared family level.\n\n## Crop varieties and collection\n\nPlayers can buy different seeds from `!shop`, plant a crop by its ID (for example `!tanam corn 2`), and harvest each crop into its own sellable resource. Rarity tiers are Common, Uncommon, and Rare. `!koleksi` tracks harvested crop discoveries globally across servers.\n\n## Economy rules
+## Global player and social system
+
+Player accounts, profiles, wallets, farms, and friendships are keyed by Discord user ID and shared across every server where the bot is installed. Server IDs are not used to create separate player economies. Friendship requests must be accepted by the recipient. Profiles support a bio of up to 160 characters. Optional game-partner status is global too; both players must accept a proposal flow, and bond points can be claimed once every 24 hours.
+
+## Adventure, homes, pets, and events
+
+`!ekspedisi` starts a two-hour-cooldown exploration run that awards a random sellable resource and adventure XP. `!rumah` shows the player's home; upgrades cost SawitCoin and increase pet capacity. Players can adopt pets, rename them, and feed them five TBS once per hour to gain pet XP. A shared weekly event rotates automatically across all servers and can boost harvests, expeditions, or reduce adoption cost.
+
+## Global player marketplace
+
+Players can create listings from inventory, browse active offers, buy partial quantities, and cancel their own listings. Listed items are held in escrow so they cannot be sold twice. Purchases transfer SawitCoin directly from buyer to seller and write ledger entries for both sides. Listings expire after seven days; expired listings can still be cancelled by the seller to reclaim the remaining escrowed items.
+
+## Family cooperatives
+
+A player can belong to one global family with up to eight members. Owners can invite players, transfer leadership, or remove members. Invitations require acceptance. Harvesting crops contributes one family point per harvested plot, building a shared family level.
+
+## Crop varieties and collection
+
+Players can buy different seeds from `!shop`, plant a crop by its ID (for example `!tanam corn 2`), and harvest each crop into its own sellable resource. Rarity tiers are Common, Uncommon, and Rare. `!koleksi` tracks harvested crop discoveries globally across servers.
+
+## Economy rules
 
 The MVP deliberately avoids printing large amounts of free money. The primary farming faucet is the sale of TBS. Seeds are a recurring sink and land expansion is a large permanent sink. `!work` and `!daily` are intentionally small compared with farming so they support new players without becoming the dominant money source.
 
