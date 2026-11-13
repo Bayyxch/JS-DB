@@ -41,7 +41,7 @@ function renderShop(userId: string, category: string, page: number) {
     new ButtonBuilder().setCustomId(`shop-page:${userId}:${category}:${safePage + 1}`).setLabel('Berikutnya').setStyle(ButtonStyle.Secondary).setDisabled(safePage >= pages - 1),
   );
   return {
-    embeds: [infoEmbed(`Shop · ${categoryLabel}`, `${description}\n\nGunakan `!buy <item> <jumlah>` untuk membeli.`)],
+    embeds: [infoEmbed(`Shop · ${categoryLabel}`, `${description}\n\nGunakan !buy <item> <jumlah> untuk membeli.`)],
     components: [
       new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(select),
       buttons,
