@@ -76,8 +76,8 @@ export function createTradeOffer(
 
 export function acceptTradeOffer(targetId: string, offerId: number, timestamp = Date.now()): void {
   if (!Number.isSafeInteger(offerId) || offerId <= 0) throw new Error('TRADE_ID_INVALID');
+  db.transaction(() => expireOffers(timestamp))();
   db.transaction(() => {
-    expireOffers(timestamp);
     const offer = db.prepare("SELECT * FROM trade_offers WHERE id = ? AND status = 'PENDING'")
       .get(offerId) as {
         proposer_id: string; target_id: string; give_item_id: string; give_quantity: number;
@@ -94,8 +94,8 @@ export function acceptTradeOffer(targetId: string, offerId: number, timestamp = 
 
 export function cancelTradeOffer(proposerId: string, offerId: number, timestamp = Date.now()): void {
   if (!Number.isSafeInteger(offerId) || offerId <= 0) throw new Error('TRADE_ID_INVALID');
+  db.transaction(() => expireOffers(timestamp))();
   db.transaction(() => {
-    expireOffers(timestamp);
     const offer = db.prepare("SELECT * FROM trade_offers WHERE id = ? AND status = 'PENDING'")
       .get(offerId) as { proposer_id: string; give_item_id: string; give_quantity: number } | undefined;
     if (!offer) throw new Error('TRADE_NOT_FOUND');
