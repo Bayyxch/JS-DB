@@ -33,7 +33,7 @@ import { houseCommand } from './commands/rumah.js';
 import { petCommand } from './commands/pet.js';
 import { adventureCommand } from './commands/adventure.js';
 import { eventCommand } from './commands/event.js';
-import { createHelpCommand } from './commands/help.js';
+import { createHelpCommand, handleHelpSelectInteraction } from './commands/help.js';
 
 runMigrations();
 
@@ -79,6 +79,18 @@ for (const command of commands) {
 
 client.once('ready', () => {
   logger.info(`Logged in as ${client.user?.tag ?? 'unknown'} in ${client.guilds.cache.size} guild(s).`);
+});
+
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isStringSelectMenu()) return;
+  try {
+    await handleHelpSelectInteraction(interaction, baseCommands);
+  } catch (error) {
+    logger.error('Help menu interaction failed', error);
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction.reply({ content: 'Menu bantuan gagal dimuat. Coba jalankan !help lagi.', ephemeral: true }).catch(() => undefined);
+    }
+  }
 });
 
 client.on('messageCreate', async (message) => {
