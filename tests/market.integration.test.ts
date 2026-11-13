@@ -33,6 +33,7 @@ afterAll(() => {
 
 describe('global escrow marketplace', () => {
   it('escrows items and supports partial purchases with seller payouts', () => {
+    const buyerSeedBefore = economy.getInventoryItem(buyerId, 'seed_basic');
     const listing = market.createMarketListing(sellerId, 'seed_basic', 2, 500);
     expect(economy.getInventoryItem(sellerId, 'seed_basic')).toBe(6);
     expect(market.getMarketListings()).toHaveLength(1);
@@ -42,12 +43,12 @@ describe('global escrow marketplace', () => {
     expect(first.remaining).toBe(1);
     expect(first.buyerBalance).toBe(2000);
     expect(first.sellerBalance).toBe(3000);
-    expect(economy.getInventoryItem(buyerId, 'seed_basic')).toBe(1);
+    expect(economy.getInventoryItem(buyerId, 'seed_basic')).toBe(buyerSeedBefore + 1);
 
     const second = market.buyMarketListing(buyerId, listing.listingId, 1);
     expect(second.remaining).toBe(0);
     expect(market.getMarketListings()).toHaveLength(0);
-    expect(economy.getInventoryItem(buyerId, 'seed_basic')).toBe(2);
+    expect(economy.getInventoryItem(buyerId, 'seed_basic')).toBe(buyerSeedBefore + 2);
   });
 
   it('prevents self-purchases and rolls back failed transactions', () => {
