@@ -95,6 +95,25 @@ npm run dev
 !work
 !leaderboard
 !ping
+!profil
+!profil bio Halo, petani sawit!
+!teman add @pemain
+!nikah propose @pemain
+!koleksi
+!koperasi create Sawit Bersatu
+!market
+!market history tbs
+!trade offer @pemain tbs 20 corn 5
+!trade list
+!rumah
+!rumah upgrade
+!pet shop
+!pet adopt cat
+!pet feed 1
+!adventure
+!adventure explore river
+!adventure history
+!event
 ```
 
 Aliases are also available for common commands, such as `!saldo`, `!farm`, `!inv`, `!beli`, `!jual`, `!luas`, `!lb`, and `!harvest`.
