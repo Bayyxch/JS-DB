@@ -5,6 +5,19 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'COMPANY_NAME_INVALID': return 'Nama koperasi harus 3–24 karakter dan hanya boleh berisi huruf, angka, spasi, garis bawah, atau tanda hubung.';
+    case 'COMPANY_ALREADY_MEMBER': return 'Lo sudah menjadi anggota koperasi lain.';
+    case 'COMPANY_INVITE_SELF': return 'Lo nggak bisa mengundang diri sendiri.';
+    case 'COMPANY_NOT_FOUND': return 'Lo belum tergabung dalam koperasi.';
+    case 'COMPANY_OWNER_ONLY': return 'Aksi ini hanya bisa dilakukan pemilik koperasi.';
+    case 'COMPANY_INVITE_NOT_FOUND': return 'Undangan koperasi tidak ditemukan atau sudah kedaluwarsa.';
+    case 'COMPANY_FULL': return 'Koperasi sudah mencapai batas 20 anggota.';
+    case 'COMPANY_OWNER_TRANSFER_REQUIRED': return 'Pindahkan kepemilikan dengan !koperasi transfer @anggota sebelum keluar.';
+    case 'COMPANY_CANNOT_KICK_OWNER': return 'Pemilik tidak bisa mengeluarkan dirinya sendiri. Gunakan transfer atau disband.';
+    case 'COMPANY_MEMBER_NOT_FOUND': return 'Anggota tersebut tidak ditemukan di koperasi lo.';
+    case 'COMPANY_TRANSFER_SELF': return 'Pilih anggota lain untuk menerima kepemilikan.';
+    case 'COMPANY_ID_INVALID': return 'ID koperasi tidak valid.';
+    case 'COMPANY_PROGRESS_LIMIT': return 'Progres koperasi mencapai batas aman sistem.';
     case 'MARRIAGE_SELF': return 'Lo nggak bisa mengajukan pasangan untuk diri sendiri.';
     case 'MARRIAGE_ALREADY_MARRIED': return 'Salah satu pemain sudah punya pasangan game.';
     case 'MARRIAGE_PROPOSAL_RECEIVED': return 'Pemain itu sudah mengirim proposal ke lo. Gunakan !nikah accept @pemain.';
