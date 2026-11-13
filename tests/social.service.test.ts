@@ -5,6 +5,8 @@ import path from 'node:path';
 
 const userA = '11111111111111111';
 const userB = '22222222222222222';
+const userC = '33333333333333333';
+const userD = '44444444444444444';
 let databasePath = '';
 let db!: { close: () => void };
 let ensureUser!: (id: string, username: string) => void;
@@ -24,6 +26,8 @@ beforeAll(async () => {
 
   ensureUser(userA, 'PlayerA');
   ensureUser(userB, 'PlayerB');
+  ensureUser(userC, 'PlayerC');
+  ensureUser(userD, 'PlayerD');
 });
 
 afterAll(() => {
@@ -75,5 +79,36 @@ describe('global player profiles and friendships', () => {
     social.removeFriend(userB, userA);
     expect(social.listFriends(userA)).toHaveLength(0);
     expect(() => social.removeFriend(userA, userB)).toThrow('FRIEND_NOT_FOUND');
+  });
+});
+
+describe('global game-partner progression', () => {
+  it('requires acceptance, prevents multiple partners, and tracks shared bond cooldown', () => {
+    social.sendMarriageProposal(userC, userD);
+    expect(() => social.sendMarriageProposal(userC, userD)).toThrow('MARRIAGE_PROPOSAL_PENDING');
+    expect(() => social.sendMarriageProposal(userD, userC)).toThrow('MARRIAGE_PROPOSAL_RECEIVED');
+
+    social.acceptMarriageProposal(userD, userC);
+    expect(social.getMarriage(userC)?.partner_id).toBe(userD);
+    expect(social.getMarriage(userD)?.partner_id).toBe(userC);
+    expect(() => social.sendMarriageProposal(userA, userC)).toThrow('MARRIAGE_ALREADY_MARRIED');
+
+    const now = 1_800_000_000_000;
+    const claim = social.claimBond(userC, now);
+    expect(claim.points).toBe(10);
+    expect(claim.level).toBe(1);
+    expect(() => social.claimBond(userD, now + 1)).toThrow('COOLDOWN');
+    expect(social.getMarriage(userD)?.bond_points).toBe(10);
+
+    social.divorce(userD);
+    expect(social.getMarriage(userC)).toBeUndefined();
+    expect(() => social.claimBond(userC, now + 86_400_001)).toThrow('MARRIAGE_NOT_FOUND');
+  });
+
+  it('declines a proposal and rejects divorce without a partner', () => {
+    social.sendMarriageProposal(userA, userB);
+    social.declineMarriageProposal(userB, userA);
+    expect(() => social.acceptMarriageProposal(userB, userA)).toThrow('MARRIAGE_PROPOSAL_NOT_FOUND');
+    expect(() => social.divorce(userA)).toThrow('MARRIAGE_NOT_FOUND');
   });
 });

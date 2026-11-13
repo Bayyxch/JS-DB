@@ -111,4 +111,40 @@ export const migrations: Migration[] = [
       db.prepare('INSERT OR IGNORE INTO player_profiles (user_id, bio, updated_at) SELECT id, \'\', updated_at FROM users').run();
     },
   },
+  {
+    version: 3,
+    name: 'global_marriages_and_bond_progression',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS marriage_proposals (
+          proposer_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          target_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          created_at INTEGER NOT NULL,
+          PRIMARY KEY (proposer_id, target_id),
+          CHECK (proposer_id <> target_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_marriage_proposals_target
+          ON marriage_proposals(target_id, created_at ASC);
+        CREATE TABLE IF NOT EXISTS marriages (
+          user_low TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          user_high TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          married_at INTEGER NOT NULL,
+          bond_points INTEGER NOT NULL DEFAULT 0 CHECK (bond_points >= 0),
+          last_bond_claim_at INTEGER,
+          PRIMARY KEY (user_low, user_high),
+          CHECK (user_low < user_high)
+        );
+        CREATE TRIGGER IF NOT EXISTS trg_marriages_one_partner
+        BEFORE INSERT ON marriages
+        BEGIN
+          SELECT CASE WHEN EXISTS (
+            SELECT 1 FROM marriages
+            WHERE user_low IN (NEW.user_low, NEW.user_high)
+               OR user_high IN (NEW.user_low, NEW.user_high)
+          ) THEN RAISE(ABORT, 'MARRIAGE_ALREADY_MARRIED') END;
+        END;
+        CREATE INDEX IF NOT EXISTS idx_marriages_high ON marriages(user_high);
+      `);
+    },
+  },
 ];
