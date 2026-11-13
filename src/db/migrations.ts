@@ -479,7 +479,7 @@ const progressionAndEconomyMigration: Migration = {
 
       UPDATE items SET equipment_slot = 'HAND', exp_bonus = 10 WHERE id = 'gold_glove';
       UPDATE items SET equipment_slot = 'ACCESSORY' WHERE id = 'lucky_necklace';
-      UPDATE crops SET grow_seconds = 30 WHERE id = 'basic';
+      UPDATE crops SET grow_seconds = ${config.economy.basicGrowSeconds} WHERE id = 'basic';
     `);
   },
 };
