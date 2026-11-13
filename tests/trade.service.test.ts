@@ -64,6 +64,16 @@ describe('global escrowed player trades', () => {
     expect(() => trades.acceptTradeOffer(target, offerId, timestamp + 48 * 60 * 60 * 1000 + 2)).toThrow('TRADE_NOT_FOUND');
   });
 
+  it('escrows and transfers SawitCoin through the trade flow', () => {
+    const proposerBefore = economy.getBalance(proposer);
+    const targetBefore = economy.getBalance(target);
+    const offerId = trades.createTradeOffer(proposer, target, 'currency_sc', 200, 'tbs', 1);
+    expect(economy.getBalance(proposer)).toBe(proposerBefore - 200);
+    trades.acceptTradeOffer(target, offerId);
+    expect(economy.getBalance(target)).toBe(targetBefore + 200);
+    expect(economy.getInventoryItem(proposer, 'tbs')).toBeGreaterThan(0);
+  });
+
   it('rejects invalid self and same-item trades', () => {
     expect(() => trades.createTradeOffer(proposer, proposer, 'seed_basic', 1, 'tbs', 1)).toThrow('TRADE_SELF');
     expect(() => trades.createTradeOffer(proposer, target, 'tbs', 1, 'tbs', 2)).toThrow('TRADE_SAME_ITEM');
