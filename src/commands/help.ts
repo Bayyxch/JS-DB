@@ -17,7 +17,7 @@ const HELP_CATEGORIES = [
 ] as const;
 
 const CATEGORY_COMMANDS: Record<string, string[]> = {
-  CATEGORY_CMD: ['help', 'ping', 'profil', 'balance', 'status'],
+  CATEGORY_CMD: ['ping', 'profil', 'balance', 'status'],
   FARM_CMD: ['kebun', 'tanam', 'panen', 'luasin', 'koleksi', 'event'],
   ECONOMY_CMD: ['shop', 'buy', 'sell', 'inventory', 'market', 'daily', 'work', 'leaderboard', 'economy'],
   SOCIAL_CMD: ['teman', 'nikah', 'trade'],
@@ -55,6 +55,7 @@ function categoryEmbed(commands: Command[], categoryId: string) {
   const lines = selected.map((command) =>
     `**${config.prefix}${command.name}** — ${command.description}\nCara pakai: \`${command.usage.replace(/^!/, config.prefix)}\``,
   );
+  if (categoryId === 'CATEGORY_CMD') lines.unshift(`**${config.prefix}help** — Buka menu kategori dan panduan command.\nCara pakai: \`${config.prefix}help [command]\``);
   return infoEmbed(
     `Bantuan: ${category?.label ?? 'Command'}`,
     lines.join('\n\n') || 'Belum ada command di kategori ini.',
@@ -86,6 +87,10 @@ export function createHelpCommand(commands: Command[]): Command {
     async execute({ message, args }) {
       const requested = args[0]?.toLowerCase();
       if (requested) {
+        if (requested === 'help' || requested === 'h') {
+          await message.reply({ embeds: [infoEmbed('Bantuan: ' + config.prefix + 'help', 'Buka menu kategori dengan `' + config.prefix + 'help`. Untuk panduan spesifik gunakan `' + config.prefix + 'help <command>`, misalnya `' + config.prefix + 'help tanam`.')] });
+          return;
+        }
         const command = commands.find((entry) =>
           entry.name === requested || entry.aliases?.some((alias) => alias.toLowerCase() === requested),
         );
