@@ -5,6 +5,8 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'TRADE_LIMIT': return 'Lo sudah punya 5 penawaran trade aktif. Selesaikan atau batalkan dulu.';
+    case 'TRADE_TARGET_INVALID': return 'Pilih pemain sungguhan, bukan bot, sebagai tujuan trade.';
     case 'TRADE_SELF': return 'Lo nggak bisa membuat penawaran ke diri sendiri.';
     case 'TRADE_SAME_ITEM': return 'Pilih dua jenis item yang berbeda untuk ditukar.';
     case 'TRADE_ID_INVALID': return 'ID penawaran trade tidak valid.';
