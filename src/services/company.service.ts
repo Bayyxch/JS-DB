@@ -59,6 +59,7 @@ export function inviteToCompany(ownerId: string, targetId: string): void {
     const company = getUserCompany(ownerId);
     if (!company) throw new Error('COMPANY_NOT_FOUND');
     if (company.owner_id !== ownerId) throw new Error('COMPANY_OWNER_ONLY');
+    if (company.member_count >= 20) throw new Error('COMPANY_FULL');
     if (!db.prepare('SELECT 1 FROM users WHERE id = ?').get(targetId)) throw new Error('FRIEND_USER_NOT_FOUND');
     if (db.prepare('SELECT 1 FROM company_members WHERE user_id = ?').get(targetId)) throw new Error('COMPANY_ALREADY_MEMBER');
     db.prepare('INSERT INTO company_invites (company_id, target_id, inviter_id, created_at, expires_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(company_id, target_id) DO UPDATE SET inviter_id = excluded.inviter_id, created_at = excluded.created_at, expires_at = excluded.expires_at')
@@ -83,6 +84,8 @@ export function acceptCompanyInvite(userId: string, companyId: number): CompanyI
     const invite = db.prepare('SELECT expires_at FROM company_invites WHERE company_id = ? AND target_id = ?')
       .get(companyId, userId) as { expires_at: number } | undefined;
     if (!invite || invite.expires_at <= Date.now()) throw new Error('COMPANY_INVITE_NOT_FOUND');
+    const company = db.prepare('SELECT COUNT(*) AS count FROM company_members WHERE company_id = ?').get(companyId) as { count: number };
+    if (company.count >= 20) throw new Error('COMPANY_FULL');
     db.prepare('INSERT INTO company_members (user_id, company_id, role, joined_at) VALUES (?, ?, \'MEMBER\', ?)')
       .run(userId, companyId, Date.now());
     db.prepare('DELETE FROM company_invites WHERE target_id = ?').run(userId);
