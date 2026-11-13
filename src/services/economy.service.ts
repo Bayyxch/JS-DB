@@ -134,6 +134,15 @@ export function grantPlayerXp(userId: string, amount: number) {
   return db.transaction(() => addPlayerXpInTransaction(userId, amount))();
 }
 
+export function getEquippedItems(userId: string): Array<{ name: string; slot: string }> {
+  return db.prepare(`
+    SELECT i.name, e.slot
+    FROM player_equipment e JOIN items i ON i.id = e.item_id
+    WHERE e.user_id = ?
+    ORDER BY e.slot ASC
+  `).all(userId) as Array<{ name: string; slot: string }>;
+}
+
 export function getGemBalance(userId: string): number {
   const row = db.prepare('SELECT gems FROM wallets WHERE user_id = ?').get(userId) as { gems: number } | undefined;
   return row?.gems ?? 0;
