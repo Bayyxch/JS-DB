@@ -1,5 +1,5 @@
 import { db } from '../db/database.js';
-import { credit, randomYield } from './economy.service.js';
+import { credit, randomYield, grantPlayerXp } from './economy.service.js';
 import { getHouse } from './housing-pet.service.js';
 import { getCurrentWorldEvent } from './world-event.service.js';
 
@@ -23,6 +23,9 @@ export interface AdventureResult {
   house_level: number;
   event_name: string;
   next_at: number;
+  xp_awarded: number;
+  level: number;
+  levels_gained: number;
 }
 
 export function getAdventureZones(userId: string): AdventureZone[] {
@@ -58,6 +61,7 @@ export function explore(userId: string, zoneId: string, timestamp = Date.now()):
     const houseBonus = Math.min(0.2, (house.level - 1) * 0.05);
     const petBonus = pet ? Math.min(0.2, pet.power_percent / 100 + (pet.level - 1) * 0.005) : 0;
     const finalReward = Math.max(1, Math.floor(baseReward * (1 + houseBonus + petBonus) * event.adventureMultiplier));
+    const progression = grantPlayerXp(userId, 15);
     const balance = credit(userId, finalReward, 'ADVENTURE_REWARD', {
       zoneId,
       baseReward,
@@ -86,6 +90,9 @@ export function explore(userId: string, zoneId: string, timestamp = Date.now()):
       house_level: house.level,
       event_name: event.name,
       next_at: nextAt,
+      xp_awarded: progression.awarded,
+      level: progression.level,
+      levels_gained: progression.levelsGained,
     };
   })();
 }
