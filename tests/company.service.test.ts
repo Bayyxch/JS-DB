@@ -53,13 +53,13 @@ describe('global cooperative companies', () => {
   });
 
   it('tracks member harvests in shared cooperative progression', () => {
-    economy.buyItem(member, 'seed_corn', 1);
-    economy.plant(member, 'corn', 1);
+    economy.buyItem(member, 'seed_basic', 1);
+    economy.plant(member, 'basic', 1);
     database.prepare('UPDATE farm_plots SET planted_at = ? WHERE user_id = ? AND crop_id = ?')
-      .run(Date.now() - 100_000_000, member, 'corn');
+      .run(Date.now() - 100_000_000, member, 'basic');
     const harvested = economy.harvest(member);
     const company = companies.getUserCompany(member)!;
-    expect(company.total_harvested).toBe(harvested.items.find((item) => item.itemId === 'corn')?.quantity);
+    expect(company.total_harvested).toBe(harvested.items.find((item) => item.itemId === 'tbs')?.quantity);
     expect(company.level).toBe(1);
   });
 
