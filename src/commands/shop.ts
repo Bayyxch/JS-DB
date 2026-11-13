@@ -77,7 +77,7 @@ export async function handleShopInteraction(interaction: StringSelectMenuInterac
   if (interaction.isButton() && parts[0] === 'shop-page') {
     const category = parts[2];
     const page = Number(parts[3]);
-    if (!CATEGORIES.some((entry) => entry.value === category) || !Number.isSafeInteger(page)) {
+    if (!category || !CATEGORIES.some((entry) => entry.value === category) || !Number.isSafeInteger(page)) {
       await interaction.reply({ content: 'Halaman toko tidak valid.', ephemeral: true });
       return;
     }
