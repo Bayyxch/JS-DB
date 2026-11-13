@@ -344,4 +344,57 @@ export const migrations: Migration[] = [
       `);
     },
   },
-];
+
+  {
+    version: 9,
+    name: 'palm_only_crop_rebalance',
+    up: (db) => {
+      // Preserve existing player progress while converting the old mixed-crop
+      // economy into a palm-only plantation loop.
+      db.exec(`
+        INSERT INTO inventory (user_id, item_id, quantity)
+        SELECT user_id, 'seed_basic', SUM(quantity)
+        FROM inventory
+        WHERE item_id IN ('seed_corn', 'seed_rice', 'seed_cocoa') AND quantity > 0
+        GROUP BY user_id
+        ON CONFLICT(user_id, item_id) DO UPDATE
+          SET quantity = quantity + excluded.quantity;
+
+        INSERT INTO inventory (user_id, item_id, quantity)
+        SELECT inv.user_id, 'tbs',
+          MAX(1, CAST(SUM(inv.quantity * items.sell_price) / ${config.economy.tbsSellPrice} AS INTEGER))
+        FROM inventory inv
+        JOIN items ON items.id = inv.item_id
+        WHERE inv.item_id IN ('corn', 'rice', 'cocoa') AND inv.quantity > 0
+        GROUP BY inv.user_id
+        ON CONFLICT(user_id, item_id) DO UPDATE
+          SET quantity = quantity + excluded.quantity;
+
+        DELETE FROM inventory
+        WHERE item_id IN ('seed_corn', 'seed_rice', 'seed_cocoa', 'corn', 'rice', 'cocoa');
+
+        UPDATE farm_plots
+        SET crop_id = 'basic'
+        WHERE crop_id IN ('corn', 'rice', 'cocoa');
+
+        DELETE FROM crop_discoveries
+        WHERE crop_id IN ('corn', 'rice', 'cocoa');
+
+        DELETE FROM market_prices
+        WHERE item_id IN ('corn', 'rice', 'cocoa');
+
+        UPDATE items
+        SET type = 'LEGACY',
+            buy_price = 0,
+            sell_price = 0,
+            description = 'Item dari sistem tanaman lama; sudah dikonversi ke sistem perkebunan sawit.'
+        WHERE id IN ('seed_corn', 'seed_rice', 'seed_cocoa', 'corn', 'rice', 'cocoa');
+
+        DELETE FROM crops WHERE id IN ('corn', 'rice', 'cocoa');
+      `);
+
+      db.prepare('UPDATE crops SET grow_seconds = ? WHERE id = ?')
+        .run(config.economy.basicGrowMinutes * 60, 'basic');
+    },
+  },
+];\n
