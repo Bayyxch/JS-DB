@@ -362,3 +362,54 @@ export async function renderShopCard(items: ShopVisualItem[]): Promise<Buffer> {
   });
   return canvas.encode('png');
 }
+
+
+export async function renderHarvestCard(data: {
+  username: string;
+  eventName: string;
+  eventDescription: string;
+  worldEventName: string;
+  harvested: number;
+  items: Array<{ itemName: string; quantity: number }>;
+}): Promise<Buffer> {
+  const canvas = createCanvas(WIDTH, 430 + data.items.length * 78);
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = COLORS.background;
+  ctx.fillRect(0, 0, WIDTH, canvas.height);
+  roundedRect(ctx, 24, 24, WIDTH - 48, canvas.height - 48, 28);
+  ctx.fillStyle = COLORS.panel;
+  ctx.fill();
+  ctx.fillStyle = COLORS.accent;
+  ctx.font = '700 36px Arial';
+  ctx.fillText('HASIL PANEN SAWIT', 64, 88);
+  ctx.fillStyle = COLORS.muted;
+  ctx.font = '21px Arial';
+  ctx.fillText(`Panen milik ${data.username.slice(0, 28)}`, 64, 128);
+  roundedRect(ctx, 64, 160, WIDTH - 128, 118, 18);
+  ctx.fillStyle = COLORS.panelSoft;
+  ctx.fill();
+  ctx.fillStyle = COLORS.accent;
+  ctx.font = '700 26px Arial';
+  ctx.fillText(data.eventName.slice(0, 48), 90, 204);
+  ctx.fillStyle = COLORS.text;
+  ctx.font = '18px Arial';
+  drawWrappedText(ctx, data.eventDescription, 90, 238, 980, 24, 1);
+  ctx.fillStyle = COLORS.muted;
+  ctx.font = '18px Arial';
+  ctx.fillText(`Event dunia: ${data.worldEventName}   •   Plot dipanen: ${data.harvested}`, 64, 322);
+  data.items.forEach((item, index) => {
+    const y = 354 + index * 78;
+    roundedRect(ctx, 64, y, WIDTH - 128, 62, 14);
+    ctx.fillStyle = COLORS.panelSoft;
+    ctx.fill();
+    ctx.fillStyle = COLORS.text;
+    ctx.font = '700 23px Arial';
+    ctx.fillText(item.itemName.slice(0, 38), 88, y + 39);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = COLORS.accent;
+    ctx.font = '700 25px Arial';
+    ctx.fillText(`+${formatNumber(item.quantity)}`, WIDTH - 88, y + 39);
+    ctx.textAlign = 'left';
+  });
+  return canvas.encode('png');
+}
