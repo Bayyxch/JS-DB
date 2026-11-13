@@ -5,6 +5,7 @@ export function friendlyError(error: unknown): string {
 
   const availableAt = (error as Error & { availableAt?: number }).availableAt;
   switch (error.message) {
+    case 'MARKET_VOLUME_LIMIT': return 'Volume perdagangan melewati batas aman sistem.';
     case 'COMPANY_NAME_TAKEN': return 'Nama koperasi itu sudah digunakan.';
     case 'COMPANY_NAME_INVALID': return 'Nama koperasi harus 3–24 karakter dan hanya boleh berisi huruf, angka, spasi, garis bawah, atau tanda hubung.';
     case 'COMPANY_ALREADY_MEMBER': return 'Lo sudah menjadi anggota koperasi lain.';
