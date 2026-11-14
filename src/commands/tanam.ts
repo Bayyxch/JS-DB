@@ -7,15 +7,15 @@ import { formatNumber } from '../utils/format.js';
 import { friendlyError } from '../utils/errors.js';
 
 export const tanamCommand: Command = {
-  name: 'tanam',
-  aliases: ['plant'],
+  name: 'plant',
+  aliases: ['tanam'],
   description: 'Tanam sawit di lahan kosong.',
-  usage: '!tanam [basic] [jumlah]',
+  usage: '!plant [basic] [jumlah]',
   cooldownMs: 2500,
   async execute({ message, userId, args }) {
     const parsed = parseQuantity(args, 'basic');
     if (!parsed) {
-      await message.reply({ embeds: [errorEmbed('Format salah', 'Contoh: `!tanam 4` atau `!tanam basic 4`')] });
+      await message.reply({ embeds: [errorEmbed('Format salah', 'Contoh: `!plant 4` atau `!plant basic 4`')] });
       return;
     }
     try {
