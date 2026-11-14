@@ -55,6 +55,7 @@ export function friendlyError(error: unknown): string {
     case 'MARRIAGE_NOT_FOUND': return 'Lo belum punya pasangan game.';
     case 'BOND_LIMIT': return 'Poin bond sudah mencapai batas aman sistem.';
     case 'BIO_TOO_LONG': return 'Bio maksimal 160 karakter.';
+    case 'PROFILE_THEME_INVALID': return 'Warna tidak valid. Gunakan nama warna yang tersedia atau hex 6 digit, misalnya #2E8B57.';
     case 'FRIEND_SELF': return 'Lo nggak bisa menambahkan diri sendiri sebagai teman.';
     case 'FRIEND_USER_NOT_FOUND': return 'Akun pemain itu belum terdaftar. Minta dia memakai command bot dulu.';
     case 'ALREADY_FRIENDS': return 'Kalian sudah berteman.';
