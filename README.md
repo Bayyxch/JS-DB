@@ -4,7 +4,7 @@ Discord bot simulasi pertanian sawit dengan **global economy**, sistem sosial, p
 
 Alur dasar permainan:
 
-`!tanam` → `!panen` → `!jual` → `!luasin`
+`!plant` → `!harvest` → `!sell` → `!expand`
 
 ## Fitur
 
@@ -150,41 +150,40 @@ Jika custom emoji tidak diatur, bot menggunakan fallback teks.
 !work
 !leaderboard
 
-!kebun
-!tanam
-!panen
-!jual
-!luasin
+!farm
+!plant
+!harvest
+!sell
+!expand
 !inventory
 !shop
 !buy
 
-!profil
-!profil bio <teks>
+!profile
+!profile bio <teks>
 
-!teman add @pemain
-!nikah propose @pemain
+!friend add @pemain
+!marry propose @pemain
 
-!koleksi
-!koperasi create <nama>
+!collection
+!company create <nama>
 !market
 !market history <komoditas>
 !trade offer @pemain <item> <jumlah>
 !trade list
 
-!rumah
-!rumah upgrade
+!house
+!house upgrade
 !pet shop
 !pet adopt <jenis>
 !pet feed <id>
 
 !adventure
-!adventure explore <zona>
 !adventure history
 !event
 ```
 
-Alias tersedia untuk beberapa command, misalnya `!saldo`, `!farm`, `!inv`, `!beli`, `!jual`, `!luas`, `!lb`, dan `!harvest`.
+Nama command utama menggunakan bahasa Inggris agar konsisten. Alias lama berbahasa Indonesia tetap didukung, termasuk `!kebun`, `!tanam`, `!panen`, `!luasin`, `!profil`, `!teman`, `!nikah`, `!koleksi`, `!koperasi`, dan `!rumah`.
 
 Gunakan `!help` di Discord untuk melihat bantuan command yang tersedia pada versi bot yang sedang berjalan.
 
@@ -248,8 +247,8 @@ Dibuat untuk mengembangkan pengalaman farming, economy, dan social yang bisa dim
 ## Gameplay Notes
 
 - The core farming loop is focused on kelapa sawit and Tandan Buah Segar (TBS).
-- Palm growth defaults to 10 minutes and is capped at 30 minutes for Discord-friendly sessions.
-- Use `!help` for the interactive command categories or `!help <command>` for a focused guide.
+- Palm growth defaults to 30 seconds and is capped at 60 seconds for Discord-friendly sessions.
+- Use `!help` for the interactive command categories or `!help <command>` for a focused guide. English command names are canonical; legacy Indonesian aliases remain available.
 - Canvas cards are used for player-facing screens such as profile, farm, harvest, inventory, shop, and leaderboard, with embed fallbacks.
 
 
