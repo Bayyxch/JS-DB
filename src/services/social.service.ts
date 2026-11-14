@@ -9,6 +9,7 @@ export interface PlayerProfile {
   friend_count: number;
   farm_plots: number;
   planted_plots: number;
+  theme_color?: string;
 }
 
 function assertBio(bio: string): string {
@@ -21,6 +22,7 @@ export function getPlayerProfile(userId: string): PlayerProfile | undefined {
   return db.prepare(`
     SELECT u.id, u.username, u.created_at,
       COALESCE(p.bio, '') AS bio,
+      COALESCE(p.theme_color, '#8eaf68') AS theme_color,
       COALESCE(w.balance, 0) AS balance,
       (SELECT COUNT(*) FROM friendships f WHERE f.user_low = u.id OR f.user_high = u.id) AS friend_count,
       (SELECT COUNT(*) FROM farm_plots fp WHERE fp.user_id = u.id) AS farm_plots,
@@ -190,4 +192,40 @@ export function claimBond(userId: string, timestamp = Date.now()): { points: num
       .run(points, timestamp, marriage.user_low, marriage.user_high);
     return { points, level: Math.floor(points / 100) + 1, nextAt: timestamp + cooldownMs };
   })();
+}
+
+
+const PROFILE_THEME_COLORS: Record<string, string> = {
+  green: '#8eaf68',
+  forest: '#426b45',
+  blue: '#4f83cc',
+  sky: '#56a9c9',
+  purple: '#8b6fc1',
+  pink: '#d879a8',
+  red: '#c85b58',
+  orange: '#d98b45',
+  gold: '#c6a34a',
+  teal: '#4caaa0',
+  white: '#e8e8e8',
+  black: '#30343b',
+};
+
+export function normalizeProfileTheme(input: string): string {
+  const value = input.trim().toLowerCase();
+  if (value === 'default' || value === 'reset') return '#8eaf68';
+  const named = PROFILE_THEME_COLORS[value];
+  if (named) return named;
+  const hex = value.startsWith('#') ? value : `#${value}`;
+  if (!/^#[0-9a-f]{6}$/i.test(hex)) throw new Error('PROFILE_THEME_INVALID');
+  return hex.toLowerCase();
+}
+
+export function setPlayerTheme(userId: string, input: string): string {
+  const color = normalizeProfileTheme(input);
+  db.prepare(`
+    INSERT INTO player_profiles (user_id, bio, theme_color, updated_at)
+    VALUES (?, '', ?, ?)
+    ON CONFLICT(user_id) DO UPDATE SET theme_color = excluded.theme_color, updated_at = excluded.updated_at
+  `).run(userId, color, Date.now());
+  return color;
 }

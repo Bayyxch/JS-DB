@@ -84,6 +84,7 @@ function drawWrappedText(
 export async function renderProfileCard(profile: PlayerProfile, avatarUrl?: string): Promise<Buffer> {
   const canvas = createCanvas(WIDTH, HEIGHT);
   const ctx = canvas.getContext('2d');
+  const themeColor = profile.theme_color ?? COLORS.accent;
 
   ctx.fillStyle = COLORS.background;
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -92,7 +93,7 @@ export async function renderProfileCard(profile: PlayerProfile, avatarUrl?: stri
   ctx.fillStyle = COLORS.panel;
   ctx.fill();
 
-  ctx.fillStyle = COLORS.accent;
+  ctx.fillStyle = themeColor;
   roundedRect(ctx, 28, 28, 12, HEIGHT - 56, 6);
   ctx.fill();
 
@@ -111,7 +112,7 @@ export async function renderProfileCard(profile: PlayerProfile, avatarUrl?: stri
     const drawHeight = avatar.height * scale;
     ctx.drawImage(avatar, 160 - drawWidth / 2, 230 - drawHeight / 2, drawWidth, drawHeight);
   } else {
-    ctx.fillStyle = COLORS.accentSoft;
+    ctx.fillStyle = themeColor;
     ctx.fillRect(88, 158, 144, 144);
     ctx.fillStyle = COLORS.text;
     ctx.font = '700 58px Arial';
@@ -372,11 +373,14 @@ export async function renderHarvestCard(data: {
   harvested: number;
   items: Array<{ itemName: string; quantity: number }>;
 }): Promise<Buffer> {
-  const canvas = createCanvas(WIDTH, 430 + data.items.length * 78);
+  const scale = 2;
+  const logicalHeight = 430 + data.items.length * 78;
+  const canvas = createCanvas(WIDTH * scale, logicalHeight * scale);
   const ctx = canvas.getContext('2d');
+  ctx.scale(scale, scale);
   ctx.fillStyle = COLORS.background;
-  ctx.fillRect(0, 0, WIDTH, canvas.height);
-  roundedRect(ctx, 24, 24, WIDTH - 48, canvas.height - 48, 28);
+  ctx.fillRect(0, 0, WIDTH, logicalHeight);
+  roundedRect(ctx, 24, 24, WIDTH - 48, logicalHeight - 48, 28);
   ctx.fillStyle = COLORS.panel;
   ctx.fill();
   ctx.fillStyle = COLORS.accent;

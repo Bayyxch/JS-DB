@@ -486,3 +486,17 @@ const progressionAndEconomyMigration: Migration = {
 
 migrations.push(progressionAndEconomyMigration);
 
+
+
+const profileThemeMigration: Migration = {
+  version: 11,
+  name: 'player_profile_theme_color',
+  up: (db) => {
+    db.exec(`
+      ALTER TABLE player_profiles
+      ADD COLUMN theme_color TEXT NOT NULL DEFAULT '#8eaf68';
+    `);
+  },
+};
+
+migrations.push(profileThemeMigration);
