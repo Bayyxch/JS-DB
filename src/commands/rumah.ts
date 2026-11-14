@@ -4,10 +4,10 @@ import { infoEmbed, successEmbed } from '../utils/embed.js';
 import { formatNumber } from '../utils/format.js';
 
 export const houseCommand: Command = {
-  name: 'rumah',
-  aliases: ['house'],
+  name: 'house',
+  aliases: ['rumah'],
   description: 'Lihat dan tingkatkan rumah global pemain.',
-  usage: '!rumah [upgrade]',
+  usage: '!house [upgrade]',
   async execute({ message, userId, args }) {
     if (args[0]?.toLowerCase() === 'upgrade') {
       const house = upgradeHouse(userId);
@@ -21,7 +21,7 @@ export const houseCommand: Command = {
       `Upgrade berikutnya: **${house.next_upgrade_cost === null ? 'Maksimum' : formatNumber(house.next_upgrade_cost) + ' SawitCoin'}**`,
       '',
       'Upgrade rumah membuka area petualangan yang lebih jauh.',
-      'Gunakan `!rumah upgrade` untuk meningkatkan rumah.',
+      'Gunakan `!house upgrade` untuk meningkatkan rumah.',
     ].join('\n'))] });
   },
 };
