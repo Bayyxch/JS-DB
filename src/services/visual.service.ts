@@ -112,7 +112,7 @@ export async function renderProfileCard(profile: PlayerProfile, avatarUrl?: stri
     const drawHeight = avatar.height * scale;
     ctx.drawImage(avatar, 160 - drawWidth / 2, 230 - drawHeight / 2, drawWidth, drawHeight);
   } else {
-    ctx.fillStyle = COLORS.accentSoft;
+    ctx.fillStyle = themeColor;
     ctx.fillRect(88, 158, 144, 144);
     ctx.fillStyle = COLORS.text;
     ctx.font = '700 58px Arial';
@@ -249,8 +249,8 @@ export async function renderFarmCard(data: {
   const canvas = createCanvas(WIDTH, 350 + rows * 112);
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = COLORS.background;
-  ctx.fillRect(0, 0, WIDTH, logicalHeight);
-  roundedRect(ctx, 24, 24, WIDTH - 48, logicalHeight - 48, 28);
+  ctx.fillRect(0, 0, WIDTH, canvas.height);
+  roundedRect(ctx, 24, 24, WIDTH - 48, canvas.height - 48, 28);
   ctx.fillStyle = COLORS.panel;
   ctx.fill();
   ctx.fillStyle = COLORS.accent;
@@ -379,8 +379,8 @@ export async function renderHarvestCard(data: {
   const ctx = canvas.getContext('2d');
   ctx.scale(scale, scale);
   ctx.fillStyle = COLORS.background;
-  ctx.fillRect(0, 0, WIDTH, canvas.height);
-  roundedRect(ctx, 24, 24, WIDTH - 48, canvas.height - 48, 28);
+  ctx.fillRect(0, 0, WIDTH, logicalHeight);
+  roundedRect(ctx, 24, 24, WIDTH - 48, logicalHeight - 48, 28);
   ctx.fillStyle = COLORS.panel;
   ctx.fill();
   ctx.fillStyle = COLORS.accent;
