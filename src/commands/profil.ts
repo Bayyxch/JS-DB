@@ -18,7 +18,7 @@ export const profileCommand: Command = {
 
     const target = message.mentions.users.first() ?? message.author;
     const profile = getPlayerProfile(target.id);
-    if (!profilee) {
+    if (!profile) {
       await message.reply({ embeds: [infoEmbed('Pemain belum terdaftar', 'Pemain ini perlu menggunakan command bot terlebih dahulu.')] });
       return;
     }
