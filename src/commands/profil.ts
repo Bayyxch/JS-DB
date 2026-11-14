@@ -5,10 +5,10 @@ import { infoEmbed } from '../utils/embed.js';
 import { renderProfileCard } from '../services/visual.service.js';
 
 export const profileCommand: Command = {
-  name: 'profil',
-  aliases: ['profile', 'me'],
+  name: 'profile',
+  aliases: ['me', 'profil'],
   description: 'Lihat profil pemain global atau atur bio.',
-  usage: '!profil [bio <teks>] atau !profil @pemain',
+  usage: '!profile [bio <teks>] atau !profile @pemain',
   async execute({ message, userId, args }) {
     if (args[0]?.toLowerCase() === 'bio') {
       const bio = setPlayerBio(userId, args.slice(1).join(' '));
@@ -18,7 +18,7 @@ export const profileCommand: Command = {
 
     const target = message.mentions.users.first() ?? message.author;
     const profile = getPlayerProfile(target.id);
-    if (!profile) {
+    if (!profilee) {
       await message.reply({ embeds: [infoEmbed('Pemain belum terdaftar', 'Pemain ini perlu menggunakan command bot terlebih dahulu.')] });
       return;
     }
