@@ -7,10 +7,10 @@ import { successEmbed, errorEmbed, infoEmbed } from '../utils/embed.js';
 import { friendlyError } from '../utils/errors.js';
 
 export const luasCommand: Command = {
-  name: 'luasin',
-  aliases: ['luas', 'expand'],
+  name: 'expand',
+  aliases: ['luasin', 'luas'],
   description: 'Buka satu plot lahan baru.',
-  usage: '!luasin',
+  usage: '!expand',
   cooldownMs: 2000,
   async execute({ message, userId }) {
     const current = getFarmPlots(userId).length;
