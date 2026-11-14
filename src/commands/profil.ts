@@ -7,7 +7,7 @@ import { renderProfileCard } from '../services/visual.service.js';
 export const profileCommand: Command = {
   name: 'profile',
   aliases: ['me', 'profil'],
-  description: 'Lihat profil pemain global atau atur bio.',
+  description: 'Lihat profil pemain global, atur bio, dan ubah warna tema.',
   usage: '!profile [bio <teks>] | !profile theme <color/hexcode> | !profile @pemain',
   async execute({ message, userId, args }) {
     if (args[0]?.toLowerCase() === 'theme') {
