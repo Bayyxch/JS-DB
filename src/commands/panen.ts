@@ -8,10 +8,10 @@ import { friendlyError } from '../utils/errors.js';
 import { renderHarvestCard } from '../services/visual.service.js';
 
 export const panenCommand: Command = {
-  name: 'panen',
-  aliases: ['harvest'],
+  name: 'harvest',
+  aliases: ['panen'],
   description: 'Panen semua tanaman sawit yang sudah matang.',
-  usage: '!panen',
+  usage: '!harvest',
   cooldownMs: 2500,
   async execute({ message, userId }) {
     try {

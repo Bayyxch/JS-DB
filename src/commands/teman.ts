@@ -16,10 +16,10 @@ function targetId(args: string[], mentionedId?: string): string {
 }
 
 export const friendCommand: Command = {
-  name: 'teman',
-  aliases: ['friend', 'friends'],
+  name: 'friend',
+  aliases: ['friends', 'teman'],
   description: 'Kelola pertemanan global pemain.',
-  usage: '!teman add/accept/decline/remove @pemain | !teman list',
+  usage: '!friend add/accept/decline/remove @pemain | !friend list',
   async execute({ message, userId, args }) {
     const action = args[0]?.toLowerCase();
     const mentionId = message.mentions.users.first()?.id;
@@ -31,7 +31,7 @@ export const friendCommand: Command = {
         friends.length ? friends.map((friend) => `• <@${friend.id}>`).join('\n') : 'Belum punya teman.',
         '',
         '**Permintaan masuk**',
-        incoming.length ? incoming.map((request) => `• <@${request.id}> — ` + '`!teman accept @pemain`').join('\n') : 'Tidak ada permintaan masuk.',
+        incoming.length ? incoming.map((request) => `• <@${request.id}> — ` + '`!friend accept @pemain`').join('\n') : 'Tidak ada permintaan masuk.',
       ];
       await message.reply({ embeds: [infoEmbed('Daftar Teman', lines.join('\n'))] });
       return;
@@ -58,6 +58,6 @@ export const friendCommand: Command = {
       await message.reply({ embeds: [infoEmbed('Teman dihapus', 'Pemain tersebut sudah dihapus dari daftar teman.')] });
       return;
     }
-    await message.reply({ embeds: [infoEmbed('Cara pakai', '`!teman add @pemain`\n`!teman accept @pemain`\n`!teman decline @pemain`\n`!teman remove @pemain`\n`!teman list`')] });
+    await message.reply({ embeds: [infoEmbed('Cara pakai', '`!friend add @pemain`\n`!friend accept @pemain`\n`!friend decline @pemain`\n`!friend remove @pemain`\n`!friend list`')] });
   },
 };

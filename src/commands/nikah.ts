@@ -16,10 +16,10 @@ function requiredTarget(mentionedId?: string, args: string[] = []): string {
 }
 
 export const marriageCommand: Command = {
-  name: 'nikah',
-  aliases: ['marry', 'pasangan'],
+  name: 'marry',
+  aliases: ['marriage', 'nikah', 'pasangan'],
   description: 'Ajukan pasangan game dan tingkatkan bond bersama.',
-  usage: '!nikah propose/accept/decline @pemain | !nikah status/bond/divorce',
+  usage: '!marry propose/accept/decline @pemain | !marry status/bond/divorce',
   async execute({ message, userId, args }) {
     const action = args[0]?.toLowerCase() ?? 'status';
     const mentionId = message.mentions.users.first()?.id;
@@ -34,7 +34,7 @@ export const marriageCommand: Command = {
     if (action === 'accept') {
       const targetId = requiredTarget(mentionId, args.slice(1));
       acceptMarriageProposal(userId, targetId);
-      await message.reply({ embeds: [successEmbed('Pasangan terdaftar', `<@${targetId}> sekarang menjadi pasangan game lo. Gunakan ` + '`!nikah bond`' + ` untuk menaikkan level bond.`)] });
+      await message.reply({ embeds: [successEmbed('Pasangan terdaftar', `<@${targetId}> sekarang menjadi pasangan game lo. Gunakan ` + '`!marry bond`' + ` untuk menaikkan level bond.`)] });
       return;
     }
 
@@ -48,7 +48,7 @@ export const marriageCommand: Command = {
     if (action === 'status') {
       const marriage = getMarriage(userId);
       if (!marriage) {
-        await message.reply({ embeds: [infoEmbed('Belum punya pasangan game', 'Gunakan `!nikah propose @pemain` untuk mengirim proposal.')] });
+        await message.reply({ embeds: [infoEmbed('Belum punya pasangan game', 'Gunakan `!marry propose @pemain` untuk mengirim proposal.')] });
         return;
       }
       const level = Math.floor(marriage.bond_points / 100) + 1;
@@ -74,12 +74,12 @@ export const marriageCommand: Command = {
     }
 
     await message.reply({ embeds: [infoEmbed('Cara pakai', [
-      '`!nikah propose @pemain`',
-      '`!nikah accept @pemain`',
-      '`!nikah decline @pemain`',
-      '`!nikah status`',
-      '`!nikah bond`',
-      '`!nikah divorce`',
+      '`!marry propose @pemain`',
+      '`!marry accept @pemain`',
+      '`!marry decline @pemain`',
+      '`!marry status`',
+      '`!marry bond`',
+      '`!marry divorce`',
     ].join('\n'))] });
   },
 };

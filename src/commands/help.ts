@@ -8,21 +8,21 @@ import { config } from '../config/env.js';
 import { infoEmbed } from '../utils/embed.js';
 
 const HELP_CATEGORIES = [
-  { id: 'CATEGORY_CMD', label: 'Umum', description: 'Profil, saldo, status, dan bantuan.' },
-  { id: 'FARM_CMD', label: 'Perkebunan Sawit', description: 'Kebun, tanam, panen, lahan, dan koleksi.' },
-  { id: 'ECONOMY_CMD', label: 'Ekonomi', description: 'Shop, jual-beli, saldo, pasar, dan leaderboard.' },
-  { id: 'SOCIAL_CMD', label: 'Sosial', description: 'Teman, pasangan, dan pertukaran item.' },
-  { id: 'COMPANY_CMD', label: 'Koperasi', description: 'Kelola koperasi dan anggota.' },
-  { id: 'ADVENTURE_CMD', label: 'Aktivitas', description: 'Rumah, hewan peliharaan, dan petualangan.' },
+  { id: 'CATEGORY_CMD', label: 'General', description: 'Profil, saldo, status, dan bantuan.' },
+  { id: 'FARM_CMD', label: 'Farming', description: 'Kelola kebun, tanam, panen, lahan, dan koleksi.' },
+  { id: 'ECONOMY_CMD', label: 'Economy', description: 'Shop, jual-beli, saldo, pasar, dan leaderboard.' },
+  { id: 'SOCIAL_CMD', label: 'Social', description: 'Kelola pertemanan, pasangan, dan trade.' },
+  { id: 'COMPANY_CMD', label: 'Community', description: 'Bangun komunitas dan kelola anggota.' },
+  { id: 'ADVENTURE_CMD', label: 'Adventure', description: 'Rumah, hewan peliharaan, dan petualangan.' },
 ] as const;
 
 const CATEGORY_COMMANDS: Record<string, string[]> = {
-  CATEGORY_CMD: ['ping', 'profil', 'balance', 'status'],
-  FARM_CMD: ['kebun', 'tanam', 'panen', 'luasin', 'koleksi', 'event'],
+  CATEGORY_CMD: ['ping', 'profile', 'balance', 'status'],
+  FARM_CMD: ['farm', 'plant', 'harvest', 'expand', 'collection', 'event'],
   ECONOMY_CMD: ['shop', 'buy', 'sell', 'inventory', 'market', 'daily', 'work', 'leaderboard', 'economy'],
-  SOCIAL_CMD: ['teman', 'nikah', 'trade'],
-  COMPANY_CMD: ['koperasi'],
-  ADVENTURE_CMD: ['rumah', 'pet', 'adventure'],
+  SOCIAL_CMD: ['friend', 'marry', 'trade'],
+  COMPANY_CMD: ['company'],
+  ADVENTURE_CMD: ['house', 'pet', 'adventure'],
 };
 
 function categoryMenu(ownerId: string): ActionRowBuilder<StringSelectMenuBuilder> {
@@ -88,7 +88,7 @@ export function createHelpCommand(commands: Command[]): Command {
       const requested = args[0]?.toLowerCase();
       if (requested) {
         if (requested === 'help' || requested === 'h') {
-          await message.reply({ embeds: [infoEmbed('Bantuan: ' + config.prefix + 'help', 'Buka menu kategori dengan `' + config.prefix + 'help`. Untuk panduan spesifik gunakan `' + config.prefix + 'help <command>`, misalnya `' + config.prefix + 'help tanam`.')] });
+          await message.reply({ embeds: [infoEmbed('Bantuan: ' + config.prefix + 'help', 'Buka menu kategori dengan `' + config.prefix + 'help`. Untuk panduan spesifik gunakan `' + config.prefix + 'help <command>`, misalnya `' + config.prefix + 'help plant`.')] });
           return;
         }
         const command = commands.find((entry) =>
@@ -109,7 +109,7 @@ export function createHelpCommand(commands: Command[]): Command {
           '',
           '**Pilih kategori** dari menu di bawah untuk melihat command.',
           `Butuh panduan spesifik? Gunakan \`${config.prefix}help <command>\`.`,
-          `Contoh: \`${config.prefix}help tanam\`, \`${config.prefix}help profil\`.`,
+          `Contoh: \`${config.prefix}help tanam\`, \`${config.prefix}help profile\`.`,
         ].join('\n'),
       );
       await message.reply({

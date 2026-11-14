@@ -8,10 +8,10 @@ import { db } from '../db/database.js';
 import { renderFarmCard, type FarmVisualPlot } from '../services/visual.service.js';
 
 export const kebunCommand: Command = {
-  name: 'kebun',
-  aliases: ['farm'],
+  name: 'farm',
+  aliases: ['kebun'],
   description: 'Lihat kondisi kebun lo.',
-  usage: '!kebun',
+  usage: '!farm',
   async execute({ message, userId }) {
     const plots = getFarmPlots(userId);
     const visualPlots: FarmVisualPlot[] = [];
