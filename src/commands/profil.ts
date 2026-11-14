@@ -16,7 +16,7 @@ export const profileCommand: Command = {
         return;
       }
       const color = setPlayerTheme(userId, args[1]);
-      await message.reply({ embeds: [infoEmbed('Theme diperbarui', `Warna profile lo sekarang ${color}. Jalankan `!profile` untuk melihat hasilnya.`)] });
+      await message.reply({ embeds: [infoEmbed('Theme diperbarui', `Warna profile lo sekarang ${color}. Jalankan !profile untuk melihat hasilnya.`)] });
       return;
     }
 
