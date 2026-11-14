@@ -29,17 +29,17 @@ function numericCompanyId(value?: string): number {
 }
 
 export const companyCommand: Command = {
-  name: 'koperasi',
-  aliases: ['company', 'perusahaan'],
+  name: 'company',
+  aliases: ['koperasi', 'perusahaan'],
   description: 'Bangun koperasi global bersama pemain lain.',
-  usage: '!koperasi create/nama | invite/accept/decline | info/members/leave/kick/transfer/disband/top',
+  usage: '!company create/nama | invite/accept/decline | info/members/leave/kick/transfer/disband/top',
   async execute({ message, userId, args }) {
     const action = args[0]?.toLowerCase() ?? 'info';
     const mentionId = message.mentions.users.first()?.id;
 
     if (action === 'create') {
       const company = createCompany(userId, args.slice(1).join(' '));
-      await message.reply({ embeds: [successEmbed('Koperasi dibuat', `**${company.name}** berhasil dibuat. ID: **#${company.id}**. Undang anggota dengan ` + '`!koperasi invite @pemain`' + `.`)] });
+      await message.reply({ embeds: [successEmbed('Koperasi dibuat', `**${company.name}** berhasil dibuat. ID: **#${company.id}**. Undang anggota dengan ` + '`!company invite @pemain`' + `.`)] });
       return;
     }
 
@@ -51,7 +51,7 @@ export const companyCommand: Command = {
 
     if (action === 'invites') {
       const invites = listCompanyInvites(userId);
-      const lines = invites.map((invite) => `**#${invite.company_id} — ${invite.company_name}** dari <@${invite.inviter_id}>\nTerakhir berlaku <t:${Math.floor(invite.expires_at / 1000)}:R>\nTerima: ` + '`!koperasi accept ' + '${invite.company_id}' + '`');
+      const lines = invites.map((invite) => `**#${invite.company_id} — ${invite.company_name}** dari <@${invite.inviter_id}>\nTerakhir berlaku <t:${Math.floor(invite.expires_at / 1000)}:R>\nTerima: ` + '`!company accept ' + '${invite.company_id}' + '`');
       await message.reply({ embeds: [infoEmbed('Undangan Koperasi', lines.join('\n\n') || 'Tidak ada undangan aktif.')] });
       return;
     }
@@ -71,7 +71,7 @@ export const companyCommand: Command = {
     if (action === 'info' || action === 'members') {
       const company = getUserCompany(userId);
       if (!company) {
-        await message.reply({ embeds: [infoEmbed('Belum bergabung', 'Buat koperasi dengan `!koperasi create Nama` atau cek undangan dengan `!koperasi invites`.')] });
+        await message.reply({ embeds: [infoEmbed('Belum bergabung', 'Buat koperasi dengan `!company create Nama` atau cek undangan dengan `!company invites`.')] });
         return;
       }
       const members = listCompanyMembers(company.id);
@@ -124,16 +124,16 @@ export const companyCommand: Command = {
     }
 
     await message.reply({ embeds: [infoEmbed('Cara pakai Koperasi', [
-      '`!koperasi create Nama Koperasi`',
-      '`!koperasi invite @pemain`',
-      '`!koperasi invites`',
-      '`!koperasi accept <id>` / `!koperasi decline <id>`',
-      '`!koperasi info` / `!koperasi members`',
-      '`!koperasi leave`',
-      '`!koperasi kick @pemain`',
-      '`!koperasi transfer @anggota`',
-      '`!koperasi disband`',
-      '`!koperasi top`',
+      '`!company create Nama Koperasi`',
+      '`!company invite @pemain`',
+      '`!company invites`',
+      '`!company accept <id>` / `!company decline <id>`',
+      '`!company info` / `!company members`',
+      '`!company leave`',
+      '`!company kick @pemain`',
+      '`!company transfer @anggota`',
+      '`!company disband`',
+      '`!company top`',
     ].join('\n'))] });
   },
 };
