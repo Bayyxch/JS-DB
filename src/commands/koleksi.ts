@@ -4,10 +4,10 @@ import { infoEmbed } from '../utils/embed.js';
 import { formatNumber } from '../utils/format.js';
 
 export const collectionCommand: Command = {
-  name: 'koleksi',
-  aliases: ['collection', 'crops'],
+  name: 'collection',
+  aliases: ['crops', 'koleksi'],
   description: 'Lihat katalog tanaman dan catatan hasil panen global.',
-  usage: '!koleksi',
+  usage: '!collection',
   async execute({ message, userId }) {
     const crops = getCropCollection(userId);
     const discovered = crops.filter((crop) => crop.discovered === 1).length;
