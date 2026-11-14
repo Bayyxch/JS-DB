@@ -9,7 +9,7 @@ export interface PlayerProfile {
   friend_count: number;
   farm_plots: number;
   planted_plots: number;
-  theme_color: string;
+  theme_color?: string;
 }
 
 function assertBio(bio: string): string {
